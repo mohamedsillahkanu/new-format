@@ -476,23 +476,23 @@
             </div>
 
             <div class="charts-section">
-                <div class="section-title">Quick Overview</div>
+                <div class="section-title">Trends</div>
                 <div class="mini-charts">
                     <div class="mini-chart">
-                        <div class="mini-chart-title">OPD by Age</div>
-                        <div class="chart-container"><canvas id="miniOPDAge"></canvas></div>
+                        <div class="mini-chart-title">Reporting Rate</div>
+                        <div class="chart-container"><canvas id="miniReportingRate"></canvas></div>
                     </div>
                     <div class="mini-chart">
-                        <div class="mini-chart-title">Test Results</div>
-                        <div class="chart-container"><canvas id="miniTestResults"></canvas></div>
+                        <div class="mini-chart-title">Testing Rate</div>
+                        <div class="chart-container"><canvas id="miniTestingRate"></canvas></div>
                     </div>
                     <div class="mini-chart">
-                        <div class="mini-chart-title">Cases by Location</div>
-                        <div class="chart-container"><canvas id="miniLocation"></canvas></div>
+                        <div class="mini-chart-title">Test Positivity Rate</div>
+                        <div class="chart-container"><canvas id="miniPositivityRate"></canvas></div>
                     </div>
                     <div class="mini-chart">
-                        <div class="mini-chart-title">Treatment Time</div>
-                        <div class="chart-container"><canvas id="miniTreatment"></canvas></div>
+                        <div class="mini-chart-title">Monthly Cases</div>
+                        <div class="chart-container"><canvas id="miniMonthlyCases"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -626,11 +626,13 @@
         }
 
         function renderAllCharts() {
-            renderDoughnut('miniOPDAge', ['<5 years', '5+ years'], [18500, 26730]);
-            renderPie('miniTestResults', ['Positive', 'Negative'], [8234, 3656]);
-            renderBar('miniLocation', ['Facility', 'Community'], [6200, 2034]);
-            renderDoughnut('miniTreatment', ['Within 24h', 'After 24h'], [6800, 1300]);
+            // Render mini trend charts
+            renderLine('miniReportingRate', 'Reporting Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [87, 89, 85, 92, 88, 90], '#2c6693');
+            renderLine('miniTestingRate', 'Testing Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [82, 85, 79, 88, 84, 86], '#4a90c4');
+            renderLine('miniPositivityRate', 'Positivity Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [65, 68, 62, 71, 69, 70], '#d32f2f');
+            renderLine('miniMonthlyCases', 'Monthly Cases', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [680, 720, 650, 890, 780, 840], '#2e7d32');
             
+            // Render large trend charts
             renderLine('trendConfirmed', 'Confirmed', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [680, 720, 650, 890, 780, 840], '#d32f2f');
             renderLine('trendSuspected', 'Suspected', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [1050, 1200, 980, 1350, 1180, 1290], '#fbbf24');
             renderLine('trendTesting', 'Tests', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [980, 1150, 920, 1280, 1100, 1210], '#2c6693');
@@ -642,25 +644,23 @@
             if (currentSelection === 'national') {
                 renderHBar('casesByDistrict', ['Bo', 'Kenema', 'Kono', 'Western Area', 'Port Loko'], [2100, 1850, 1600, 1484, 1200]);
             } else {
-                // Show chiefdoms for the selected district
+                // Show chiefdoms for the selected district - sort in descending order
                 const chiefdomData = {
-                    'Bo': [680, 550, 520, 350],
-                    'Kenema': [620, 490, 450, 290],
-                    'Kono': [530, 410, 380, 280],
-                    'Western Area': [920, 564],
-                    'Port Loko': [450, 420, 330]
-                };
-                
-                const chiefdomNames = {
-                    'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
-                    'Kenema': ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'],
-                    'Kono': ['Gbane', 'Gbense', 'Lei', 'Nimikoro'],
-                    'Western Area': ['Urban', 'Rural'],
-                    'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
+                    'Bo': {labels: ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'], values: [680, 550, 520, 350]},
+                    'Kenema': {labels: ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'], values: [620, 490, 450, 290]},
+                    'Kono': {labels: ['Gbane', 'Gbense', 'Lei', 'Nimikoro'], values: [530, 410, 380, 280]},
+                    'Western Area': {labels: ['Urban', 'Rural'], values: [920, 564]},
+                    'Port Loko': {labels: ['Buya Romende', 'Kaffu Bullom', 'Lokomasama'], values: [450, 420, 330]}
                 };
                 
                 const district = typeof currentSelection === 'string' && currentSelection !== 'national' ? currentSelection : 'Bo';
-                renderHBar('casesByChiefdom', chiefdomNames[district] || [], chiefdomData[district] || []);
+                const data = chiefdomData[district] || {labels: [], values: []};
+                
+                // Sort in descending order
+                const sorted = data.labels.map((label, i) => ({label, value: data.values[i]}))
+                    .sort((a, b) => b.value - a.value);
+                
+                renderHBar('casesByChiefdom', sorted.map(s => s.label), sorted.map(s => s.value));
             }
         }
 
