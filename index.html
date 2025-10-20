@@ -208,7 +208,7 @@
         .indicator-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             position: relative;
             overflow: hidden;
@@ -231,24 +231,24 @@
         }
 
         .indicator-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             letter-spacing: 0.5px;
         }
 
         .indicator-value {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 900;
             color: #2c6693;
             line-height: 1;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .indicator-subtitle {
-            font-size: 11px;
+            font-size: 10px;
             color: #888;
             font-weight: 600;
         }
@@ -470,8 +470,26 @@
                 
                 <div class="indicator-card">
                     <div class="indicator-label">Test Positivity</div>
-                    <div class="indicator-value" id="indPositivity" style="font-size: 28px;">69.2%</div>
+                    <div class="indicator-value" id="indPositivity" style="font-size: 24px;">69.2%</div>
                     <div class="indicator-subtitle">Confirmed / Tested</div>
+                </div>
+
+                <div class="indicator-card">
+                    <div class="indicator-label">Reporting Rate</div>
+                    <div class="indicator-value" id="indReportingRate" style="font-size: 24px;">88%</div>
+                    <div class="indicator-subtitle">Facilities reporting</div>
+                </div>
+
+                <div class="indicator-card">
+                    <div class="indicator-label">Testing Rate</div>
+                    <div class="indicator-value" id="indTestingRate" style="font-size: 24px;">95%</div>
+                    <div class="indicator-subtitle">Suspected tested</div>
+                </div>
+
+                <div class="indicator-card">
+                    <div class="indicator-label">Treatment Rate</div>
+                    <div class="indicator-value" id="indTreatmentRate" style="font-size: 24px;">98%</div>
+                    <div class="indicator-subtitle">Confirmed treated</div>
                 </div>
             </div>
 
@@ -549,10 +567,6 @@
             document.getElementById('chiefdomSelect').disabled = true;
             document.getElementById('chiefdomSelect').innerHTML = '<option value="">-- Select District First --</option>';
             
-            // Show district chart, hide chiefdom chart
-            document.getElementById('districtChartCard').style.display = 'block';
-            document.getElementById('chiefdomChartCard').style.display = 'none';
-            
             updateIndicators('national');
             renderAllCharts();
         }
@@ -579,12 +593,9 @@
             
             const chiefdomSelect = document.getElementById('chiefdomSelect');
             chiefdomSelect.disabled = false;
+            chiefdomSelect.value = '';
             chiefdomSelect.innerHTML = '<option value="">-- Select Chiefdom --</option>' + 
                 chiefdoms[district].map(c => `<option value="${c}">${c}</option>`).join('');
-            
-            // Hide district chart, show chiefdom chart
-            document.getElementById('districtChartCard').style.display = 'none';
-            document.getElementById('chiefdomChartCard').style.display = 'block';
             
             updateIndicators(district);
             renderAllCharts();
@@ -594,15 +605,22 @@
             const chiefdom = document.getElementById('chiefdomSelect').value;
             if (!chiefdom) {
                 const district = document.getElementById('districtSelect').value;
-                if (district) selectDistrict(district);
+                if (district) {
+                    selectDistrict(district);
+                }
                 return;
             }
             selectChiefdom(chiefdom);
         }
 
         function selectChiefdom(chiefdom) {
+            currentSelection = chiefdom;
             updateIndicators(chiefdom);
             renderAllCharts();
+        }
+
+        function resetSelection() {
+            selectNational();
         }
 
         function resetSelection() {
@@ -618,6 +636,17 @@
             document.getElementById('indTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
             document.getElementById('indAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
             document.getElementById('indDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
+            
+            // Update rate indicators
+            const positivity = (65 + Math.random() * 10).toFixed(1);
+            const reporting = (85 + Math.random() * 10).toFixed(0);
+            const testing = (90 + Math.random() * 8).toFixed(0);
+            const treatment = (96 + Math.random() * 3).toFixed(0);
+            
+            document.getElementById('indPositivity').textContent = positivity + '%';
+            document.getElementById('indReportingRate').textContent = reporting + '%';
+            document.getElementById('indTestingRate').textContent = testing + '%';
+            document.getElementById('indTreatmentRate').textContent = treatment + '%';
         }
 
         function renderAllCharts() {
