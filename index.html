@@ -476,7 +476,7 @@
             </div>
 
             <div class="charts-section">
-                <div class="section-title">Trends</div>
+                <div class="section-title">Rates</div>
                 <div class="mini-charts">
                     <div class="mini-chart">
                         <div class="mini-chart-title">Reporting Rate</div>
@@ -491,19 +491,14 @@
                         <div class="chart-container"><canvas id="miniPositivityRate"></canvas></div>
                     </div>
                     <div class="mini-chart">
-                        <div class="mini-chart-title">Monthly Cases</div>
-                        <div class="chart-container"><canvas id="miniMonthlyCases"></canvas></div>
+                        <div class="mini-chart-title">Treatment Rate</div>
+                        <div class="chart-container"><canvas id="miniTreatmentRate"></canvas></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="right-column">
-            <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Confirmed Cases</div>
-                <div class="chart-large"><canvas id="trendConfirmed"></canvas></div>
-            </div>
-
             <div class="chart-card">
                 <div class="chart-title">Monthly Trend - Suspected Cases</div>
                 <div class="chart-large"><canvas id="trendSuspected"></canvas></div>
@@ -515,23 +510,23 @@
             </div>
 
             <div class="chart-card">
-                <div class="chart-title">Confirmed Cases by Age Group</div>
-                <div class="chart-large"><canvas id="confirmedAge"></canvas></div>
+                <div class="chart-title">Monthly Trend - Confirmed Cases</div>
+                <div class="chart-large"><canvas id="trendConfirmed"></canvas></div>
             </div>
 
             <div class="chart-card">
-                <div class="chart-title">Admissions by Age Group</div>
-                <div class="chart-large"><canvas id="admissionsAge"></canvas></div>
+                <div class="chart-title">Monthly Trend - Treated Cases</div>
+                <div class="chart-large"><canvas id="trendTreated"></canvas></div>
             </div>
 
-            <div class="chart-card" id="districtChartCard">
-                <div class="chart-title">Cases by District</div>
-                <div class="chart-large"><canvas id="casesByDistrict"></canvas></div>
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Presumed Cases</div>
+                <div class="chart-large"><canvas id="trendPresumed"></canvas></div>
             </div>
 
-            <div class="chart-card" id="chiefdomChartCard" style="display: none;">
-                <div class="chart-title">Cases by Chiefdom</div>
-                <div class="chart-large"><canvas id="casesByChiefdom"></canvas></div>
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Confirmed Not Treated</div>
+                <div class="chart-large"><canvas id="trendNotTreated"></canvas></div>
             </div>
         </div>
     </div>
@@ -626,42 +621,19 @@
         }
 
         function renderAllCharts() {
-            // Render mini trend charts
+            // Render rate charts (mini charts in middle)
             renderLine('miniReportingRate', 'Reporting Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [87, 89, 85, 92, 88, 90], '#2c6693');
             renderLine('miniTestingRate', 'Testing Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [82, 85, 79, 88, 84, 86], '#4a90c4');
             renderLine('miniPositivityRate', 'Positivity Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [65, 68, 62, 71, 69, 70], '#d32f2f');
-            renderLine('miniMonthlyCases', 'Monthly Cases', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [680, 720, 650, 890, 780, 840], '#2e7d32');
+            renderLine('miniTreatmentRate', 'Treatment Rate', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [95, 96, 94, 97, 95, 96], '#2e7d32');
             
-            // Render large trend charts
-            renderLine('trendConfirmed', 'Confirmed', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [680, 720, 650, 890, 780, 840], '#d32f2f');
-            renderLine('trendSuspected', 'Suspected', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [1050, 1200, 980, 1350, 1180, 1290], '#fbbf24');
-            renderLine('trendTesting', 'Tests', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [980, 1150, 920, 1280, 1100, 1210], '#2c6693');
-            
-            renderBar('confirmedAge', ['Under 5', '5-14 years', '15+ years'], [4800, 2100, 1334]);
-            renderBar('admissionsAge', ['Under 5', '5-14 years', '15+ years'], [720, 310, 204]);
-            
-            // Render appropriate chart based on selection
-            if (currentSelection === 'national') {
-                renderHBar('casesByDistrict', ['Bo', 'Kenema', 'Kono', 'Western Area', 'Port Loko'], [2100, 1850, 1600, 1484, 1200]);
-            } else {
-                // Show chiefdoms for the selected district - sort in descending order
-                const chiefdomData = {
-                    'Bo': {labels: ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'], values: [680, 550, 520, 350]},
-                    'Kenema': {labels: ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'], values: [620, 490, 450, 290]},
-                    'Kono': {labels: ['Gbane', 'Gbense', 'Lei', 'Nimikoro'], values: [530, 410, 380, 280]},
-                    'Western Area': {labels: ['Urban', 'Rural'], values: [920, 564]},
-                    'Port Loko': {labels: ['Buya Romende', 'Kaffu Bullom', 'Lokomasama'], values: [450, 420, 330]}
-                };
-                
-                const district = typeof currentSelection === 'string' && currentSelection !== 'national' ? currentSelection : 'Bo';
-                const data = chiefdomData[district] || {labels: [], values: []};
-                
-                // Sort in descending order
-                const sorted = data.labels.map((label, i) => ({label, value: data.values[i]}))
-                    .sort((a, b) => b.value - a.value);
-                
-                renderHBar('casesByChiefdom', sorted.map(s => s.label), sorted.map(s => s.value));
-            }
+            // Render trend charts (right sidebar) - in order: Suspected, Testing, Confirmed, Treated, Presumed, Not Treated
+            renderLine('trendSuspected', 'Suspected Cases', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [1050, 1200, 980, 1350, 1180, 1290], '#fbbf24');
+            renderLine('trendTesting', 'Tests Performed', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [980, 1150, 920, 1280, 1100, 1210], '#2c6693');
+            renderLine('trendConfirmed', 'Confirmed Cases', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [680, 720, 650, 890, 780, 840], '#d32f2f');
+            renderLine('trendTreated', 'Treated Cases', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [650, 690, 625, 860, 745, 810], '#2e7d32');
+            renderLine('trendPresumed', 'Presumed Cases', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [70, 80, 60, 90, 75, 80], '#9c27b0');
+            renderLine('trendNotTreated', 'Confirmed Not Treated', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [30, 30, 25, 30, 35, 30], '#ff5722');
         }
 
         function renderDoughnut(id, labels, data) {
