@@ -134,8 +134,41 @@
 
         .geo-list {
             margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
+        }
+
+        .geo-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c6693;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c6693' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+
+        .geo-select:hover {
+            background: #e3f2fd;
+            border-color: #2c6693;
+        }
+
+        .geo-select:focus {
+            outline: none;
+            border-color: #2c6693;
+            box-shadow: 0 0 0 3px rgba(44, 102, 147, 0.1);
+        }
+
+        .geo-select option {
+            padding: 10px;
+            background: white;
+            color: #333;
         }
 
         .geo-list-item {
@@ -146,6 +179,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             border: 2px solid transparent;
+            display: none;
         }
 
         .geo-list-item:hover {
@@ -337,7 +371,7 @@
     <div class="header">
         <div class="header-content">
             <div>
-                <h1>🦟 Malaria Analytics Dashboard</h1>
+                <h1>Malaria Analytics Dashboard</h1>
                 <div class="header-subtitle">Comprehensive Surveillance & Treatment Monitoring</div>
             </div>
             <div class="header-info">
@@ -350,7 +384,7 @@
     <div class="main-container">
         <div class="left-column">
             <div class="geo-card active" onclick="selectNational()">
-                <div class="geo-card-title">🇸🇱 National Level</div>
+                <div class="geo-card-title">National Level</div>
                 <div class="geo-card-name">Sierra Leone</div>
                 <div class="geo-card-stats">
                     <div class="geo-stat">
@@ -365,20 +399,25 @@
             </div>
 
             <div class="geo-card">
-                <div class="geo-card-title">📍 Select District</div>
-                <div class="geo-list" id="districtList">
-                    <div class="geo-list-item" onclick="selectDistrict('Bo')">Bo</div>
-                    <div class="geo-list-item" onclick="selectDistrict('Kenema')">Kenema</div>
-                    <div class="geo-list-item" onclick="selectDistrict('Kono')">Kono</div>
-                    <div class="geo-list-item" onclick="selectDistrict('Western Area')">Western Area</div>
-                    <div class="geo-list-item" onclick="selectDistrict('Port Loko')">Port Loko</div>
+                <div class="geo-card-title">Select District</div>
+                <div class="geo-list">
+                    <select class="geo-select" id="districtSelect" onchange="handleDistrictChange()">
+                        <option value="">-- Select District --</option>
+                        <option value="Bo">Bo</option>
+                        <option value="Kenema">Kenema</option>
+                        <option value="Kono">Kono</option>
+                        <option value="Western Area">Western Area</option>
+                        <option value="Port Loko">Port Loko</option>
+                    </select>
                 </div>
             </div>
 
             <div class="geo-card">
-                <div class="geo-card-title">🏘️ Select Chiefdom</div>
-                <div class="geo-list" id="chiefdomList">
-                    <div style="color: #999; text-align: center; padding: 20px;">Select a district first</div>
+                <div class="geo-card-title">Select Chiefdom</div>
+                <div class="geo-list">
+                    <select class="geo-select" id="chiefdomSelect" onchange="handleChiefdomChange()" disabled>
+                        <option value="">-- Select District First --</option>
+                    </select>
                 </div>
             </div>
 
@@ -388,49 +427,49 @@
         <div class="middle-column">
             <div class="indicators-grid">
                 <div class="indicator-card">
-                    <div class="indicator-label">🏥 Total OPD Visits</div>
+                    <div class="indicator-label">Total OPD Visits</div>
                     <div class="indicator-value" id="indOPD">45,230</div>
                     <div class="indicator-subtitle">All age groups</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">🔍 Suspected Cases</div>
+                    <div class="indicator-label">Suspected Cases</div>
                     <div class="indicator-value" id="indSuspected">12,450</div>
                     <div class="indicator-subtitle">Facility & Community</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">🧪 Total Tests</div>
+                    <div class="indicator-label">Total Tests</div>
                     <div class="indicator-value" id="indTests">11,890</div>
                     <div class="indicator-subtitle">Microscopy & RDT</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">✅ Confirmed Cases</div>
+                    <div class="indicator-label">Confirmed Cases</div>
                     <div class="indicator-value" id="indConfirmed">8,234</div>
                     <div class="indicator-subtitle">Positive results</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">💊 Treated Cases</div>
+                    <div class="indicator-label">Treated Cases</div>
                     <div class="indicator-value" id="indTreated">8,100</div>
                     <div class="indicator-subtitle">ACT treatment</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">🏨 Admissions</div>
+                    <div class="indicator-label">Admissions</div>
                     <div class="indicator-value" id="indAdmissions">1,234</div>
                     <div class="indicator-subtitle">Malaria admissions</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">⚠️ Deaths</div>
+                    <div class="indicator-label">Deaths</div>
                     <div class="indicator-value" id="indDeaths" style="color: #d32f2f;">45</div>
                     <div class="indicator-subtitle">Malaria-related</div>
                 </div>
                 
                 <div class="indicator-card">
-                    <div class="indicator-label">📊 Test Positivity</div>
+                    <div class="indicator-label">Test Positivity</div>
                     <div class="indicator-value" id="indPositivity" style="font-size: 28px;">69.2%</div>
                     <div class="indicator-subtitle">Confirmed / Tested</div>
                 </div>
@@ -461,33 +500,38 @@
 
         <div class="right-column">
             <div class="chart-card">
-                <div class="chart-title">📈 Monthly Trend - Confirmed Cases</div>
+                <div class="chart-title">Monthly Trend - Confirmed Cases</div>
                 <div class="chart-large"><canvas id="trendConfirmed"></canvas></div>
             </div>
 
             <div class="chart-card">
-                <div class="chart-title">📈 Monthly Trend - Suspected Cases</div>
+                <div class="chart-title">Monthly Trend - Suspected Cases</div>
                 <div class="chart-large"><canvas id="trendSuspected"></canvas></div>
             </div>
 
             <div class="chart-card">
-                <div class="chart-title">📈 Monthly Trend - Testing</div>
+                <div class="chart-title">Monthly Trend - Testing</div>
                 <div class="chart-large"><canvas id="trendTesting"></canvas></div>
             </div>
 
             <div class="chart-card">
-                <div class="chart-title">🎯 Confirmed Cases by Age Group</div>
+                <div class="chart-title">Confirmed Cases by Age Group</div>
                 <div class="chart-large"><canvas id="confirmedAge"></canvas></div>
             </div>
 
             <div class="chart-card">
-                <div class="chart-title">🏥 Admissions by Age Group</div>
+                <div class="chart-title">Admissions by Age Group</div>
                 <div class="chart-large"><canvas id="admissionsAge"></canvas></div>
             </div>
 
-            <div class="chart-card">
-                <div class="chart-title">📍 Cases by District</div>
+            <div class="chart-card" id="districtChartCard">
+                <div class="chart-title">Cases by District</div>
                 <div class="chart-large"><canvas id="casesByDistrict"></canvas></div>
+            </div>
+
+            <div class="chart-card" id="chiefdomChartCard" style="display: none;">
+                <div class="chart-title">Cases by Chiefdom</div>
+                <div class="chart-large"><canvas id="casesByChiefdom"></canvas></div>
             </div>
         </div>
     </div>
@@ -505,17 +549,30 @@
 
         function selectNational() {
             currentSelection = 'national';
-            document.querySelectorAll('.geo-list-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('chiefdomList').innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Select a district first</div>';
+            document.getElementById('districtSelect').value = '';
+            document.getElementById('chiefdomSelect').value = '';
+            document.getElementById('chiefdomSelect').disabled = true;
+            document.getElementById('chiefdomSelect').innerHTML = '<option value="">-- Select District First --</option>';
+            
+            // Show district chart, hide chiefdom chart
+            document.getElementById('districtChartCard').style.display = 'block';
+            document.getElementById('chiefdomChartCard').style.display = 'none';
+            
             updateIndicators('national');
             renderAllCharts();
         }
 
+        function handleDistrictChange() {
+            const district = document.getElementById('districtSelect').value;
+            if (!district) {
+                selectNational();
+                return;
+            }
+            selectDistrict(district);
+        }
+
         function selectDistrict(district) {
             currentSelection = district;
-            document.querySelectorAll('#districtList .geo-list-item').forEach(el => {
-                el.classList.toggle('active', el.textContent === district);
-            });
             
             const chiefdoms = {
                 'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
@@ -525,18 +582,30 @@
                 'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
             };
             
-            document.getElementById('chiefdomList').innerHTML = chiefdoms[district].map(c => 
-                `<div class="geo-list-item" onclick="selectChiefdom('${c}')">${c}</div>`
-            ).join('');
+            const chiefdomSelect = document.getElementById('chiefdomSelect');
+            chiefdomSelect.disabled = false;
+            chiefdomSelect.innerHTML = '<option value="">-- Select Chiefdom --</option>' + 
+                chiefdoms[district].map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            // Hide district chart, show chiefdom chart
+            document.getElementById('districtChartCard').style.display = 'none';
+            document.getElementById('chiefdomChartCard').style.display = 'block';
             
             updateIndicators(district);
             renderAllCharts();
         }
 
+        function handleChiefdomChange() {
+            const chiefdom = document.getElementById('chiefdomSelect').value;
+            if (!chiefdom) {
+                const district = document.getElementById('districtSelect').value;
+                if (district) selectDistrict(district);
+                return;
+            }
+            selectChiefdom(chiefdom);
+        }
+
         function selectChiefdom(chiefdom) {
-            document.querySelectorAll('#chiefdomList .geo-list-item').forEach(el => {
-                el.classList.toggle('active', el.textContent === chiefdom);
-            });
             updateIndicators(chiefdom);
             renderAllCharts();
         }
@@ -568,7 +637,31 @@
             
             renderBar('confirmedAge', ['Under 5', '5-14 years', '15+ years'], [4800, 2100, 1334]);
             renderBar('admissionsAge', ['Under 5', '5-14 years', '15+ years'], [720, 310, 204]);
-            renderHBar('casesByDistrict', ['Bo', 'Kenema', 'Kono', 'Western Area', 'Port Loko'], [2100, 1850, 1600, 1484, 1200]);
+            
+            // Render appropriate chart based on selection
+            if (currentSelection === 'national') {
+                renderHBar('casesByDistrict', ['Bo', 'Kenema', 'Kono', 'Western Area', 'Port Loko'], [2100, 1850, 1600, 1484, 1200]);
+            } else {
+                // Show chiefdoms for the selected district
+                const chiefdomData = {
+                    'Bo': [680, 550, 520, 350],
+                    'Kenema': [620, 490, 450, 290],
+                    'Kono': [530, 410, 380, 280],
+                    'Western Area': [920, 564],
+                    'Port Loko': [450, 420, 330]
+                };
+                
+                const chiefdomNames = {
+                    'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
+                    'Kenema': ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'],
+                    'Kono': ['Gbane', 'Gbense', 'Lei', 'Nimikoro'],
+                    'Western Area': ['Urban', 'Rural'],
+                    'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
+                };
+                
+                const district = typeof currentSelection === 'string' && currentSelection !== 'national' ? currentSelection : 'Bo';
+                renderHBar('casesByChiefdom', chiefdomNames[district] || [], chiefdomData[district] || []);
+            }
         }
 
         function renderDoughnut(id, labels, data) {
