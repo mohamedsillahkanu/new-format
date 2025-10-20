@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            padding: 25px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .header-info {
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 420px;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            min-height: calc(100vh - 140px);
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .geo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .geo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(44, 102, 147, 0.15);
+        }
+
+        .geo-card.active {
+            border-color: #2c6693;
+            background: #f8fbfd;
+        }
+
+        .geo-card-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .geo-card-name {
+            font-size: 20px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-bottom: 15px;
+        }
+
+        .geo-card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .geo-stat {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .geo-stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .geo-stat-value {
+            font-size: 18px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-top: 5px;
+        }
+
+        .geo-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .geo-list-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .geo-list-item:hover {
+            background: #e3f2fd;
+            border-color: #2c6693;
+        }
+
+        .geo-list-item.active {
+            background: #2c6693;
+            color: white;
+            font-weight: 700;
+        }
+
+        .middle-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .indicator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.15);
+        }
+
+        .indicator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+        }
+
+        .indicator-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .indicator-subtitle {
+            font-size: 11px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #2c6693;
+            text-transform: uppercase;
+        }
+
+        .mini-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .mini-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .mini-chart-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .right-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .right-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .chart-large {
+            height: 280px;
+            position: relative;
+        }
+
+        .reset-btn {
+            background: #2c6693;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background: #1f4a6a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-column {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>🦟 Malaria Analytics Dashboard</h1>
+                <div class="header-subtitle">Comprehensive Surveillance & Treatment Monitoring</div>
+            </div>
+            <div class="header-info">
+                <div>Last Updated: <span id="lastUpdate">Loading...</span></div>
+                <div style="margin-top: 5px;"><strong id="recordCount">0</strong> Records</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-column">
+            <div class="geo-card active" onclick="selectNational()">
+                <div class="geo-card-title">🇸🇱 National Level</div>
+                <div class="geo-card-name">Sierra Leone</div>
+                <div class="geo-card-stats">
+                    <div class="geo-stat">
+                        <div class="geo-stat-label">Districts</div>
+                        <div class="geo-stat-value" id="nationalDistricts">5</div>
+                    </div>
+                    <div class="geo-stat">
+                        <div class="geo-stat-label">Facilities</div>
+                        <div class="geo-stat-value" id="nationalFacilities">120</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="geo-card">
+                <div class="geo-card-title">📍 Select District</div>
+                <div class="geo-list" id="districtList">
+                    <div class="geo-list-item" onclick="selectDistrict('Bo')">Bo</div>
+                    <div class="geo-list-item" onclick="selectDistrict('Kenema')">Kenema</div>
+                    <div class="geo-list-item" onclick="selectDistrict('Kono')">Kono</div>
+                    <div class="geo-list-item" onclick="selectDistrict('Western Area')">Western Area</div>
+                    <div class="geo-list-item" onclick="selectDistrict('Port Loko')">Port Loko</div>
+                </div>
+            </div>
+
+            <div class="geo-card">
+                <div class="geo-card-title">🏘️ Select Chiefdom</div>
+                <div class="geo-list" id="chiefdomList">
+                    <div style="color: #999; text-align: center; padding: 20px;">Select a district first</div>
+                </div>
+            </div>
+
+            <button class="reset-btn" onclick="resetSelection()" style="width: 100%;">Reset to National</button>
+        </div>
+
+        <div class="middle-column">
+            <div class="indicators-grid">
+                <div class="indicator-card">
+                    <div class="indicator-label">🏥 Total OPD Visits</div>
+                    <div class="indicator-value" id="indOPD">45,230</div>
+                    <div class="indicator-subtitle">All age groups</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">🔍 Suspected Cases</div>
+                    <div class="indicator-value" id="indSuspected">12,450</div>
+                    <div class="indicator-subtitle">Facility & Community</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">🧪 Total Tests</div>
+                    <div class="indicator-value" id="indTests">11,890</div>
+                    <div class="indicator-subtitle">Microscopy & RDT</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">✅ Confirmed Cases</div>
+                    <div class="indicator-value" id="indConfirmed">8,234</div>
+                    <div class="indicator-subtitle">Positive results</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">💊 Treated Cases</div>
+                    <div class="indicator-value" id="indTreated">8,100</div>
+                    <div class="indicator-subtitle">ACT treatment</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">🏨 Admissions</div>
+                    <div class="indicator-value" id="indAdmissions">1,234</div>
+                    <div class="indicator-subtitle">Malaria admissions</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">⚠️ Deaths</div>
+                    <div class="indicator-value" id="indDeaths" style="color: #d32f2f;">45</div>
+                    <div class="indicator-subtitle">Malaria-related</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">📊 Test Positivity</div>
+                    <div class="indicator-value" id="indPositivity" style="font-size: 28px;">69.2%</div>
+                    <div class="indicator-subtitle">Confirmed / Tested</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="section-title">Quick Overview</div>
+                <div class="mini-charts">
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">OPD by Age</div>
+                        <div class="chart-container"><canvas id="miniOPDAge"></canvas></div>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Test Results</div>
+                        <div class="chart-container"><canvas id="miniTestResults"></canvas></div>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Cases by Location</div>
+                        <div class="chart-container"><canvas id="miniLocation"></canvas></div>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Treatment Time</div>
+                        <div class="chart-container"><canvas id="miniTreatment"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="chart-card">
+                <div class="chart-title">📈 Monthly Trend - Confirmed Cases</div>
+                <div class="chart-large"><canvas id="trendConfirmed"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">📈 Monthly Trend - Suspected Cases</div>
+                <div class="chart-large"><canvas id="trendSuspected"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">📈 Monthly Trend - Testing</div>
+                <div class="chart-large"><canvas id="trendTesting"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">🎯 Confirmed Cases by Age Group</div>
+                <div class="chart-large"><canvas id="confirmedAge"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">🏥 Admissions by Age Group</div>
+                <div class="chart-large"><canvas id="admissionsAge"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">📍 Cases by District</div>
+                <div class="chart-large"><canvas id="casesByDistrict"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        let charts = {};
+        let currentSelection = 'national';
+
+        function initDashboard() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+            document.getElementById('recordCount').textContent = '1,250';
+            renderAllCharts();
+        }
+
+        function selectNational() {
+            currentSelection = 'national';
+            document.querySelectorAll('.geo-list-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('chiefdomList').innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Select a district first</div>';
+            updateIndicators('national');
+            renderAllCharts();
+        }
+
+        function selectDistrict(district) {
+            currentSelection = district;
+            document.querySelectorAll('#districtList .geo-list-item').forEach(el => {
+                el.classList.toggle('active', el.textContent === district);
+            });
+            
+            const chiefdoms = {
+                'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
+                'Kenema': ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'],
+                'Kono': ['Gbane', 'Gbense', 'Lei', 'Nimikoro'],
+                'Western Area': ['Urban', 'Rural'],
+                'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
+            };
+            
+            document.getElementById('chiefdomList').innerHTML = chiefdoms[district].map(c => 
+                `<div class="geo-list-item" onclick="selectChiefdom('${c}')">${c}</div>`
+            ).join('');
+            
+            updateIndicators(district);
+            renderAllCharts();
+        }
+
+        function selectChiefdom(chiefdom) {
+            document.querySelectorAll('#chiefdomList .geo-list-item').forEach(el => {
+                el.classList.toggle('active', el.textContent === chiefdom);
+            });
+            updateIndicators(chiefdom);
+            renderAllCharts();
+        }
+
+        function resetSelection() {
+            selectNational();
+        }
+
+        function updateIndicators(level) {
+            const multiplier = level === 'national' ? 1 : (Math.random() * 0.5 + 0.3);
+            document.getElementById('indOPD').textContent = Math.floor(45230 * multiplier).toLocaleString();
+            document.getElementById('indSuspected').textContent = Math.floor(12450 * multiplier).toLocaleString();
+            document.getElementById('indTests').textContent = Math.floor(11890 * multiplier).toLocaleString();
+            document.getElementById('indConfirmed').textContent = Math.floor(8234 * multiplier).toLocaleString();
+            document.getElementById('indTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
+            document.getElementById('indAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
+            document.getElementById('indDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
+        }
+
+        function renderAllCharts() {
+            renderDoughnut('miniOPDAge', ['<5 years', '5+ years'], [18500, 26730]);
+            renderPie('miniTestResults', ['Positive', 'Negative'], [8234, 3656]);
+            renderBar('miniLocation', ['Facility', 'Community'], [6200, 2034]);
+            renderDoughnut('miniTreatment', ['Within 24h', 'After 24h'], [6800, 1300]);
+            
+            renderLine('trendConfirmed', 'Confirmed', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [680, 720, 650, 890, 780, 840], '#d32f2f');
+            renderLine('trendSuspected', 'Suspected', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [1050, 1200, 980, 1350, 1180, 1290], '#fbbf24');
+            renderLine('trendTesting', 'Tests', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [980, 1150, 920, 1280, 1100, 1210], '#2c6693');
+            
+            renderBar('confirmedAge', ['Under 5', '5-14 years', '15+ years'], [4800, 2100, 1334]);
+            renderBar('admissionsAge', ['Under 5', '5-14 years', '15+ years'], [720, 310, 204]);
+            renderHBar('casesByDistrict', ['Bo', 'Kenema', 'Kono', 'Western Area', 'Port Loko'], [2100, 1850, 1600, 1484, 1200]);
+        }
+
+        function renderDoughnut(id, labels, data) {
+            const ctx = document.getElementById(id);
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: ['#2c6693', '#4a90c4', '#87b5d9', '#b3d4e8'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderPie(id, labels, data) {
+            const ctx = document.getElementById(id);
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: ['#2e7d32', '#d32f2f'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderBar(id, labels, data) {
+            const ctx = document.getElementById(id);
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: ['#2c6693', '#4a90c4', '#87b5d9'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderHBar(id, labels, data) {
+            const ctx = document.getElementById(id);
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: '#2c6693',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true },
+                        y: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function renderLine(id, label, labels, data, color) {
+            const ctx = document.getElementById(id);
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        borderColor: color,
+                        backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initDashboard);
+    </script>
+</body>
+</html>
