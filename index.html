@@ -373,9 +373,6 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            overflow-y: auto;
-            padding-right: 8px;
-            max-height: calc(100vh - 160px);
         }
 
         .right-column::-webkit-scrollbar {
@@ -400,7 +397,7 @@
         }
 
         .chart-title {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 800;
             color: #2c6693;
             margin-bottom: 15px;
@@ -583,33 +580,8 @@
 
         <div class="right-column">
             <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Suspected Cases (January-December 2025)</div>
-                <div class="chart-large"><canvas id="trendSuspected"></canvas></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Testing (January-December 2025)</div>
-                <div class="chart-large"><canvas id="trendTesting"></canvas></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Confirmed Cases (January-December 2025)</div>
-                <div class="chart-large"><canvas id="trendConfirmed"></canvas></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Treated Cases (January-December 2025)</div>
-                <div class="chart-large"><canvas id="trendTreated"></canvas></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Presumed Cases (January-December 2025)</div>
-                <div class="chart-large"><canvas id="trendPresumed"></canvas></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">Monthly Trend - Confirmed Not Treated (January-December 2025)</div>
-                <div class="chart-large"><canvas id="trendNotTreated"></canvas></div>
+                <div class="chart-title">Monthly Trends - All Indicators (January-December 2025)</div>
+                <div class="chart-large"><canvas id="trendCombined"></canvas></div>
             </div>
         </div>
     </div>
@@ -720,7 +692,7 @@
             
             // Combined rates chart
             renderMultiLine('combinedRates', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                months,
                 [
                     {
                         label: 'Reporting Rate',
@@ -742,41 +714,50 @@
                         data: [95, 96, 94, 97, 95, 96, 97, 96, 95, 96, 95, 97].map(v => Math.floor(v * variance)),
                         color: '#2e7d32'
                     }
-                ]
+                ],
+                true
             );
             
-            renderLine('trendSuspected', 'Suspected Cases', 
-                months, 
-                [1050, 1200, 980, 1350, 1180, 1290, 1420, 1250, 1180, 1320, 1150, 1280].map(v => Math.floor(v * variance)), 
-                '#fbbf24');
-            
-            renderLine('trendTesting', 'Tests Performed', 
-                months, 
-                [980, 1150, 920, 1280, 1100, 1210, 1350, 1180, 1120, 1260, 1090, 1220].map(v => Math.floor(v * variance)), 
-                '#2c6693');
-            
-            renderLine('trendConfirmed', 'Confirmed Cases', 
-                months, 
-                [680, 720, 650, 890, 780, 840, 920, 810, 770, 880, 750, 820].map(v => Math.floor(v * variance)), 
-                '#d32f2f');
-            
-            renderLine('trendTreated', 'Treated Cases', 
-                months, 
-                [650, 690, 625, 860, 745, 810, 890, 780, 740, 850, 720, 790].map(v => Math.floor(v * variance)), 
-                '#2e7d32');
-            
-            renderLine('trendPresumed', 'Presumed Cases', 
-                months, 
-                [70, 80, 60, 90, 75, 80, 95, 85, 70, 80, 65, 75].map(v => Math.floor(v * variance)), 
-                '#9c27b0');
-            
-            renderLine('trendNotTreated', 'Confirmed Not Treated', 
-                months, 
-                [30, 30, 25, 30, 35, 30, 30, 30, 30, 30, 30, 30].map(v => Math.floor(v * variance)), 
-                '#ff5722');
+            // Combined trends chart
+            renderMultiLine('trendCombined',
+                months,
+                [
+                    {
+                        label: 'Suspected Cases',
+                        data: [1050, 1200, 980, 1350, 1180, 1290, 1420, 1250, 1180, 1320, 1150, 1280].map(v => Math.floor(v * variance)),
+                        color: '#fbbf24'
+                    },
+                    {
+                        label: 'Tests Performed',
+                        data: [980, 1150, 920, 1280, 1100, 1210, 1350, 1180, 1120, 1260, 1090, 1220].map(v => Math.floor(v * variance)),
+                        color: '#2c6693'
+                    },
+                    {
+                        label: 'Confirmed Cases',
+                        data: [680, 720, 650, 890, 780, 840, 920, 810, 770, 880, 750, 820].map(v => Math.floor(v * variance)),
+                        color: '#d32f2f'
+                    },
+                    {
+                        label: 'Treated Cases',
+                        data: [650, 690, 625, 860, 745, 810, 890, 780, 740, 850, 720, 790].map(v => Math.floor(v * variance)),
+                        color: '#2e7d32'
+                    },
+                    {
+                        label: 'Presumed Cases',
+                        data: [70, 80, 60, 90, 75, 80, 95, 85, 70, 80, 65, 75].map(v => Math.floor(v * variance)),
+                        color: '#9c27b0'
+                    },
+                    {
+                        label: 'Confirmed Not Treated',
+                        data: [30, 30, 25, 30, 35, 30, 30, 30, 30, 30, 30, 30].map(v => Math.floor(v * variance)),
+                        color: '#ff5722'
+                    }
+                ],
+                false
+            );
         }
 
-        function renderMultiLine(id, labels, datasets) {
+        function renderMultiLine(id, labels, datasets, isPercentage = false) {
             const ctx = document.getElementById(id);
             if (!ctx) return;
             
@@ -836,7 +817,8 @@
                             bodyFont: { size: 12 },
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                    const suffix = isPercentage ? '%' : '';
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + suffix;
                                 }
                             }
                         }
@@ -844,12 +826,12 @@
                     scales: {
                         y: { 
                             beginAtZero: true,
-                            max: 100,
+                            max: isPercentage ? 100 : undefined,
                             ticks: { 
                                 font: { size: 11 },
                                 padding: 8,
                                 callback: function(value) {
-                                    return value + '%';
+                                    return isPercentage ? value + '%' : value.toLocaleString();
                                 }
                             },
                             grid: { color: 'rgba(0, 0, 0, 0.05)' }
