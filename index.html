@@ -268,8 +268,8 @@
         }
 
         .middle-column {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             height: fit-content;
         }
@@ -334,6 +334,9 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .section-title {
@@ -347,13 +350,18 @@
         }
 
         .mini-charts {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         .mini-chart {
             background: #f8f9fa;
             border-radius: 8px;
             padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         .mini-chart-title {
@@ -365,8 +373,10 @@
         }
 
         .chart-container {
-            height: 320px;
+            height: 100%;
+            min-height: 280px;
             position: relative;
+            flex: 1;
         }
 
         .right-column {
