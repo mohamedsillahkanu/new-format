@@ -127,6 +127,12 @@
             padding-right: 10px;
         }
 
+        .sidebar-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
         .left-column::-webkit-scrollbar {
             width: 8px;
         }
@@ -218,6 +224,13 @@
             flex-direction: column;
             gap: 15px;
             height: fit-content;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 15px;
         }
 
         .indicators-grid {
@@ -383,6 +396,10 @@
                 grid-template-columns: 1fr;
             }
             
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
             .indicators-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
@@ -393,6 +410,10 @@
         }
 
         @media (max-width: 768px) {
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             .indicators-grid {
                 grid-template-columns: 1fr;
             }
@@ -434,38 +455,71 @@
 
     <div class="main-container">
         <div class="left-column">
-            <div class="geo-card active" id="nationalCard" onclick="selectNational()">
-                <div class="geo-card-title">National Level</div>
-                <div class="geo-card-name">Sierra Leone</div>
-                <div class="geo-card-stats">
-                    <div class="geo-stat">
-                        <div class="geo-stat-label">Districts</div>
-                        <div class="geo-stat-value" id="nationalDistricts">5</div>
-                    </div>
-                    <div class="geo-stat">
-                        <div class="geo-stat-label">Facilities</div>
-                        <div class="geo-stat-value" id="nationalFacilities">120</div>
-                    </div>
+            <div class="sidebar-cards-grid">
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Total OPD Visits</div>
+                    <div class="sidebar-value" id="sideIndOPD">45,230</div>
+                    <div class="sidebar-subtitle">All age groups</div>
                 </div>
-            </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Suspected Cases</div>
+                    <div class="sidebar-value" id="sideIndSuspected">12,450</div>
+                    <div class="sidebar-subtitle">Facility & Community</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Total Tests</div>
+                    <div class="sidebar-value" id="sideIndTests">11,890</div>
+                    <div class="sidebar-subtitle">Microscopy & RDT</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Confirmed Cases</div>
+                    <div class="sidebar-value" id="sideIndConfirmed">8,234</div>
+                    <div class="sidebar-subtitle">Positive results</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Treated Cases</div>
+                    <div class="sidebar-value" id="sideIndTreated">8,100</div>
+                    <div class="sidebar-subtitle">ACT treatment</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Admissions</div>
+                    <div class="sidebar-value" id="sideIndAdmissions">1,234</div>
+                    <div class="sidebar-subtitle">Malaria admissions</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Deaths</div>
+                    <div class="sidebar-value" id="sideIndDeaths" style="color: #d32f2f;">45</div>
+                    <div class="sidebar-subtitle">Malaria-related</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Test Positivity</div>
+                    <div class="sidebar-value" id="sideIndPositivity" style="font-size: 18px;">69.2%</div>
+                    <div class="sidebar-subtitle">Confirmed / Tested</div>
+                </div>
 
-            <div class="sidebar-card">
-                <div class="sidebar-label">Current Selection</div>
-                <div class="sidebar-value" id="currentSelectionName">National</div>
-                <div class="sidebar-subtitle" id="currentSelectionType">Sierra Leone</div>
-            </div>
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Reporting Rate</div>
+                    <div class="sidebar-value" id="sideIndReportingRate" style="font-size: 18px;">88%</div>
+                    <div class="sidebar-subtitle">Facilities reporting</div>
+                </div>
 
-            <div class="sidebar-card">
-                <div class="sidebar-label">Quick Stats</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
-                    <div>
-                        <div style="font-size: 9px; color: #888; font-weight: 600; text-transform: uppercase;">Facilities</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #2c6693; margin-top: 4px;" id="statFacilities">120</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 9px; color: #888; font-weight: 600; text-transform: uppercase;">Reporting</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #2c6693; margin-top: 4px;" id="statReporting">88%</div>
-                    </div>
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Testing Rate</div>
+                    <div class="sidebar-value" id="sideIndTestingRate" style="font-size: 18px;">95%</div>
+                    <div class="sidebar-subtitle">Suspected tested</div>
+                </div>
+
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Treatment Rate</div>
+                    <div class="sidebar-value" id="sideIndTreatmentRate" style="font-size: 18px;">98%</div>
+                    <div class="sidebar-subtitle">Confirmed treated</div>
                 </div>
             </div>
         </div>
@@ -613,11 +667,6 @@
             renderAllCharts();
         }
 
-        function updateCurrentSelection(name, type) {
-            document.getElementById('currentSelectionName').textContent = name;
-            document.getElementById('currentSelectionType').textContent = type;
-        }
-
         function selectNational() {
             currentSelection = 'national';
             
@@ -626,11 +675,12 @@
             document.getElementById('headerChiefdomSelect').disabled = true;
             document.getElementById('headerChiefdomSelect').innerHTML = '<option value="">Select District First</option>';
             
-            document.getElementById('nationalCard').classList.add('active');
-            
-            updateCurrentSelection('National', 'Sierra Leone');
             updateIndicators('national');
             renderAllCharts();
+        }
+
+        function updateCurrentSelection(name, type) {
+            // Removed - no longer needed
         }
 
         function handleHeaderDistrictChange() {
@@ -645,7 +695,6 @@
 
         function selectDistrict(district) {
             currentSelection = district;
-            document.getElementById('nationalCard').classList.remove('active');
             
             const headerChiefdomSelect = document.getElementById('headerChiefdomSelect');
             headerChiefdomSelect.disabled = false;
@@ -653,7 +702,6 @@
             headerChiefdomSelect.innerHTML = '<option value="">All Chiefdoms</option>' + 
                 chiefdomsData[district].map(c => `<option value="${c}">${c}</option>`).join('');
             
-            updateCurrentSelection(district, 'District');
             updateIndicators(district);
             renderAllCharts();
         }
@@ -673,8 +721,6 @@
 
         function selectChiefdom(chiefdom) {
             currentSelection = chiefdom;
-            document.getElementById('nationalCard').classList.remove('active');
-            updateCurrentSelection(chiefdom, 'Chiefdom');
             updateIndicators(chiefdom);
             renderAllCharts();
         }
@@ -685,6 +731,8 @@
 
         function updateIndicators(level) {
             const multiplier = level === 'national' ? 1 : (Math.random() * 0.5 + 0.3);
+            
+            // Update middle column indicators
             document.getElementById('indOPD').textContent = Math.floor(45230 * multiplier).toLocaleString();
             document.getElementById('indSuspected').textContent = Math.floor(12450 * multiplier).toLocaleString();
             document.getElementById('indTests').textContent = Math.floor(11890 * multiplier).toLocaleString();
@@ -703,8 +751,18 @@
             document.getElementById('indTestingRate').textContent = testing + '%';
             document.getElementById('indTreatmentRate').textContent = treatment + '%';
             
-            document.getElementById('statFacilities').textContent = level === 'national' ? '120' : Math.floor(20 + Math.random() * 30);
-            document.getElementById('statReporting').textContent = reporting + '%';
+            // Update sidebar indicators
+            document.getElementById('sideIndOPD').textContent = Math.floor(45230 * multiplier).toLocaleString();
+            document.getElementById('sideIndSuspected').textContent = Math.floor(12450 * multiplier).toLocaleString();
+            document.getElementById('sideIndTests').textContent = Math.floor(11890 * multiplier).toLocaleString();
+            document.getElementById('sideIndConfirmed').textContent = Math.floor(8234 * multiplier).toLocaleString();
+            document.getElementById('sideIndTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
+            document.getElementById('sideIndAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
+            document.getElementById('sideIndDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
+            document.getElementById('sideIndPositivity').textContent = positivity + '%';
+            document.getElementById('sideIndReportingRate').textContent = reporting + '%';
+            document.getElementById('sideIndTestingRate').textContent = testing + '%';
+            document.getElementById('sideIndTreatmentRate').textContent = treatment + '%';
         }
 
         function renderAllCharts() {
