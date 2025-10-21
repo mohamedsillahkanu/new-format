@@ -116,6 +116,7 @@
             max-width: 1900px;
             margin: 20px auto;
             padding: 0 20px 20px 20px;
+            grid-template-rows: auto;
         }
 
         .left-column {
@@ -381,6 +382,8 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            grid-column: 4;
+            grid-row: 1;
         }
 
         .right-column::-webkit-scrollbar {
@@ -405,6 +408,75 @@
             height: calc(100vh - 160px);
             display: flex;
             flex-direction: column;
+        }
+
+        .monthly-incidence-grid {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            grid-column: 1;
+            grid-row: 1;
+            align-self: end;
+            margin-bottom: 0;
+        }
+
+        .monthly-incidence-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .month-box {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .month-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .month-name {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .month-value {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .incidence-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .incidence-moderate {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .incidence-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .incidence-very-high {
+            background: #f3e5f5;
+            color: #6a1b9a;
         }
 
         .chart-title {
@@ -576,6 +648,11 @@
                     <div class="sidebar-subtitle">Per 1,000 population</div>
                 </div>
             </div>
+
+            <div class="monthly-incidence-grid">
+                <div class="monthly-incidence-title">Monthly Incidence Rate</div>
+                <div class="months-grid" id="monthsGrid"></div>
+            </div>
         </div>
 
         <div class="middle-column">
@@ -614,6 +691,7 @@
         function initDashboard() {
             updateIndicators('national');
             renderAllCharts();
+            renderMonthlyIncidence();
         }
 
         function selectNational() {
@@ -672,6 +750,45 @@
 
         function resetSelection() {
             selectNational();
+        }
+
+        function renderMonthlyIncidence() {
+            const monthsData = [
+                { name: 'Jan', value: 165 },
+                { name: 'Feb', value: 278 },
+                { name: 'Mar', value: 342 },
+                { name: 'Apr', value: 498 },
+                { name: 'May', value: 385 },
+                { name: 'Jun', value: 405 },
+                { name: 'Jul', value: 520 },
+                { name: 'Aug', value: 295 },
+                { name: 'Sep', value: 272 },
+                { name: 'Oct', value: 388 },
+                { name: 'Nov', value: 468 },
+                { name: 'Dec', value: 382 }
+            ];
+
+            const monthsGrid = document.getElementById('monthsGrid');
+            monthsGrid.innerHTML = '';
+
+            monthsData.forEach(month => {
+                let colorClass = '';
+                if (month.value < 250) {
+                    colorClass = 'incidence-low';
+                } else if (month.value <= 450) {
+                    colorClass = 'incidence-moderate';
+                } else {
+                    colorClass = 'incidence-high';
+                }
+
+                const monthBox = document.createElement('div');
+                monthBox.className = `month-box ${colorClass}`;
+                monthBox.innerHTML = `
+                    <div class="month-name">${month.name}</div>
+                    <div class="month-value">${month.value}</div>
+                `;
+                monthsGrid.appendChild(monthBox);
+            });
         }
 
         function updateIndicators(level) {
