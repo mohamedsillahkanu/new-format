@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title-section {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .header-filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-filter-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .header-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c6693;
+            cursor: pointer;
+            min-width: 180px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c6693' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        .header-select:hover {
+            background: white;
+        }
+
+        .header-select:focus {
+            outline: none;
+            border-color: white;
+        }
+
+        .header-reset-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .header-reset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 380px 1fr 420px;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 20px auto;
+            padding: 0 20px 20px 20px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+            padding-right: 10px;
+        }
+
+        .left-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .left-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .geo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .geo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .geo-card.active {
+            background: #2c6693;
+            color: white;
+            font-weight: 700;
+        }
+
+        .geo-card-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .geo-card-name {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .geo-card-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .geo-stat {
+            flex: 1;
+        }
+
+        .geo-stat-label {
+            font-size: 9px;
+            font-weight: 600;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .geo-stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        .geo-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+        }
+
+        .geo-select:focus {
+            outline: none;
+            border-color: #2c6693;
+        }
+
+        .middle-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: fit-content;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+        }
+
+        .indicator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.15);
+        }
+
+        .indicator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+        }
+
+        .indicator-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .indicator-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #2c6693;
+            text-transform: uppercase;
+        }
+
+        .mini-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .mini-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .mini-chart-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 10px;
+            max-height: calc(100vh - 140px);
+        }
+
+        .right-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .right-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .chart-large {
+            height: 280px;
+            position: relative;
+        }
+
+        .reset-btn {
+            background: #2c6693;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background: #1f4a6a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .indicators-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .right-column {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .indicators-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title-section">
+                <h1 style="font-size: 28px; font-weight: 900;">Malaria Analytics Dashboard</h1>
+                <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">Comprehensive Surveillance & Treatment Monitoring</div>
+            </div>
+            
+            <div class="header-filters">
+                <div class="header-filter-group">
+                    <label class="header-filter-label">District</label>
+                    <select class="header-select" id="headerDistrictSelect" onchange="handleHeaderDistrictChange()">
+                        <option value="">All Districts</option>
+                        <option value="Bo">Bo</option>
+                        <option value="Kenema">Kenema</option>
+                        <option value="Kono">Kono</option>
+                        <option value="Western Area">Western Area</option>
+                        <option value="Port Loko">Port Loko</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Chiefdom</label>
+                    <select class="header-select" id="headerChiefdomSelect" onchange="handleHeaderChiefdomChange()" disabled>
+                        <option value="">Select District First</option>
+                    </select>
+                </div>
+                
+                <button class="header-reset-btn" onclick="resetSelection()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-column">
+            <div class="geo-card active" id="nationalCard" onclick="selectNational()">
+                <div class="geo-card-title">National Level</div>
+                <div class="geo-card-name">Sierra Leone</div>
+                <div class="geo-card-stats">
+                    <div class="geo-stat">
+                        <div class="geo-stat-label">Districts</div>
+                        <div class="geo-stat-value" id="nationalDistricts">5</div>
+                    </div>
+                    <div class="geo-stat">
+                        <div class="geo-stat-label">Facilities</div>
+                        <div class="geo-stat-value" id="nationalFacilities">120</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="sidebar-label">Current Selection</div>
+                <div class="sidebar-value" id="currentSelectionName">National</div>
+                <div class="sidebar-subtitle" id="currentSelectionType">Sierra Leone</div>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="sidebar-label">Quick Stats</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <div>
+                        <div style="font-size: 9px; color: #888; font-weight: 600; text-transform: uppercase;">Facilities</div>
+                        <div style="font-size: 20px; font-weight: 900; color: #2c6693; margin-top: 4px;" id="statFacilities">120</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 9px; color: #888; font-weight: 600; text-transform: uppercase;">Reporting</div>
+                        <div style="font-size: 20px; font-weight: 900; color: #2c6693; margin-top: 4px;" id="statReporting">88%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="middle-column">
+            <div class="indicators-grid">
+                <div class="indicator-card">
+                    <div class="indicator-label">Total OPD Visits</div>
+                    <div class="indicator-value" id="indOPD">45,230</div>
+                    <div class="indicator-subtitle">All age groups</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Suspected Cases</div>
+                    <div class="indicator-value" id="indSuspected">12,450</div>
+                    <div class="indicator-subtitle">Facility & Community</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Total Tests</div>
+                    <div class="indicator-value" id="indTests">11,890</div>
+                    <div class="indicator-subtitle">Microscopy & RDT</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Confirmed Cases</div>
+                    <div class="indicator-value" id="indConfirmed">8,234</div>
+                    <div class="indicator-subtitle">Positive results</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Treated Cases</div>
+                    <div class="indicator-value" id="indTreated">8,100</div>
+                    <div class="indicator-subtitle">ACT treatment</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Admissions</div>
+                    <div class="indicator-value" id="indAdmissions">1,234</div>
+                    <div class="indicator-subtitle">Malaria admissions</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Deaths</div>
+                    <div class="indicator-value" id="indDeaths" style="color: #d32f2f;">45</div>
+                    <div class="indicator-subtitle">Malaria-related</div>
+                </div>
+                
+                <div class="indicator-card">
+                    <div class="indicator-label">Test Positivity</div>
+                    <div class="indicator-value" id="indPositivity" style="font-size: 24px;">69.2%</div>
+                    <div class="indicator-subtitle">Confirmed / Tested</div>
+                </div>
+
+                <div class="indicator-card">
+                    <div class="indicator-label">Reporting Rate</div>
+                    <div class="indicator-value" id="indReportingRate" style="font-size: 24px;">88%</div>
+                    <div class="indicator-subtitle">Facilities reporting</div>
+                </div>
+
+                <div class="indicator-card">
+                    <div class="indicator-label">Testing Rate</div>
+                    <div class="indicator-value" id="indTestingRate" style="font-size: 24px;">95%</div>
+                    <div class="indicator-subtitle">Suspected tested</div>
+                </div>
+
+                <div class="indicator-card">
+                    <div class="indicator-label">Treatment Rate</div>
+                    <div class="indicator-value" id="indTreatmentRate" style="font-size: 24px;">98%</div>
+                    <div class="indicator-subtitle">Confirmed treated</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="section-title">Key Performance Rates</div>
+                <div class="mini-charts">
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Reporting Rate</div>
+                        <div class="chart-container"><canvas id="miniReportingRate"></canvas></div>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Testing Rate</div>
+                        <div class="chart-container"><canvas id="miniTestingRate"></canvas></div>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Test Positivity Rate</div>
+                        <div class="chart-container"><canvas id="miniPositivityRate"></canvas></div>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">Treatment Rate</div>
+                        <div class="chart-container"><canvas id="miniTreatmentRate"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Suspected Cases</div>
+                <div class="chart-large"><canvas id="trendSuspected"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Testing</div>
+                <div class="chart-large"><canvas id="trendTesting"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Confirmed Cases</div>
+                <div class="chart-large"><canvas id="trendConfirmed"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Treated Cases</div>
+                <div class="chart-large"><canvas id="trendTreated"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Presumed Cases</div>
+                <div class="chart-large"><canvas id="trendPresumed"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Monthly Trend - Confirmed Not Treated</div>
+                <div class="chart-large"><canvas id="trendNotTreated"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        let charts = {};
+        let currentSelection = 'national';
+
+        const chiefdomsData = {
+            'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
+            'Kenema': ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'],
+            'Kono': ['Gbane', 'Gbense', 'Lei', 'Nimikoro'],
+            'Western Area': ['Urban', 'Rural'],
+            'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
+        };
+
+        function initDashboard() {
+            updateIndicators('national');
+            renderAllCharts();
+        }
+
+        function updateCurrentSelection(name, type) {
+            document.getElementById('currentSelectionName').textContent = name;
+            document.getElementById('currentSelectionType').textContent = type;
+        }
+
+        function selectNational() {
+            currentSelection = 'national';
+            
+            document.getElementById('headerDistrictSelect').value = '';
+            document.getElementById('headerChiefdomSelect').value = '';
+            document.getElementById('headerChiefdomSelect').disabled = true;
+            document.getElementById('headerChiefdomSelect').innerHTML = '<option value="">Select District First</option>';
+            
+            document.getElementById('nationalCard').classList.add('active');
+            
+            updateCurrentSelection('National', 'Sierra Leone');
+            updateIndicators('national');
+            renderAllCharts();
+        }
+
+        function handleHeaderDistrictChange() {
+            const district = document.getElementById('headerDistrictSelect').value;
+            
+            if (!district) {
+                selectNational();
+                return;
+            }
+            selectDistrict(district);
+        }
+
+        function selectDistrict(district) {
+            currentSelection = district;
+            document.getElementById('nationalCard').classList.remove('active');
+            
+            const headerChiefdomSelect = document.getElementById('headerChiefdomSelect');
+            headerChiefdomSelect.disabled = false;
+            headerChiefdomSelect.value = '';
+            headerChiefdomSelect.innerHTML = '<option value="">All Chiefdoms</option>' + 
+                chiefdomsData[district].map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            updateCurrentSelection(district, 'District');
+            updateIndicators(district);
+            renderAllCharts();
+        }
+
+        function handleHeaderChiefdomChange() {
+            const chiefdom = document.getElementById('headerChiefdomSelect').value;
+            
+            if (!chiefdom) {
+                const district = document.getElementById('headerDistrictSelect').value;
+                if (district) {
+                    selectDistrict(district);
+                }
+                return;
+            }
+            selectChiefdom(chiefdom);
+        }
+
+        function selectChiefdom(chiefdom) {
+            currentSelection = chiefdom;
+            document.getElementById('nationalCard').classList.remove('active');
+            updateCurrentSelection(chiefdom, 'Chiefdom');
+            updateIndicators(chiefdom);
+            renderAllCharts();
+        }
+
+        function resetSelection() {
+            selectNational();
+        }
+
+        function updateIndicators(level) {
+            const multiplier = level === 'national' ? 1 : (Math.random() * 0.5 + 0.3);
+            document.getElementById('indOPD').textContent = Math.floor(45230 * multiplier).toLocaleString();
+            document.getElementById('indSuspected').textContent = Math.floor(12450 * multiplier).toLocaleString();
+            document.getElementById('indTests').textContent = Math.floor(11890 * multiplier).toLocaleString();
+            document.getElementById('indConfirmed').textContent = Math.floor(8234 * multiplier).toLocaleString();
+            document.getElementById('indTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
+            document.getElementById('indAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
+            document.getElementById('indDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
+            
+            const positivity = (65 + Math.random() * 10).toFixed(1);
+            const reporting = (85 + Math.random() * 10).toFixed(0);
+            const testing = (90 + Math.random() * 8).toFixed(0);
+            const treatment = (96 + Math.random() * 3).toFixed(0);
+            
+            document.getElementById('indPositivity').textContent = positivity + '%';
+            document.getElementById('indReportingRate').textContent = reporting + '%';
+            document.getElementById('indTestingRate').textContent = testing + '%';
+            document.getElementById('indTreatmentRate').textContent = treatment + '%';
+            
+            document.getElementById('statFacilities').textContent = level === 'national' ? '120' : Math.floor(20 + Math.random() * 30);
+            document.getElementById('statReporting').textContent = reporting + '%';
+        }
+
+        function renderAllCharts() {
+            const variance = currentSelection === 'national' ? 1 : (0.7 + Math.random() * 0.6);
+            
+            renderLine('miniReportingRate', 'Reporting Rate', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [87, 89, 85, 92, 88, 90].map(v => Math.floor(v * variance)), 
+                '#2c6693');
+            
+            renderLine('miniTestingRate', 'Testing Rate', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [82, 85, 79, 88, 84, 86].map(v => Math.floor(v * variance)), 
+                '#4a90c4');
+            
+            renderLine('miniPositivityRate', 'Positivity Rate', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [65, 68, 62, 71, 69, 70].map(v => Math.floor(v * variance)), 
+                '#d32f2f');
+            
+            renderLine('miniTreatmentRate', 'Treatment Rate', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [95, 96, 94, 97, 95, 96].map(v => Math.floor(v * variance)), 
+                '#2e7d32');
+            
+            renderLine('trendSuspected', 'Suspected Cases', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [1050, 1200, 980, 1350, 1180, 1290].map(v => Math.floor(v * variance)), 
+                '#fbbf24');
+            
+            renderLine('trendTesting', 'Tests Performed', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [980, 1150, 920, 1280, 1100, 1210].map(v => Math.floor(v * variance)), 
+                '#2c6693');
+            
+            renderLine('trendConfirmed', 'Confirmed Cases', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [680, 720, 650, 890, 780, 840].map(v => Math.floor(v * variance)), 
+                '#d32f2f');
+            
+            renderLine('trendTreated', 'Treated Cases', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [650, 690, 625, 860, 745, 810].map(v => Math.floor(v * variance)), 
+                '#2e7d32');
+            
+            renderLine('trendPresumed', 'Presumed Cases', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [70, 80, 60, 90, 75, 80].map(v => Math.floor(v * variance)), 
+                '#9c27b0');
+            
+            renderLine('trendNotTreated', 'Confirmed Not Treated', 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
+                [30, 30, 25, 30, 35, 30].map(v => Math.floor(v * variance)), 
+                '#ff5722');
+        }
+
+        function renderLine(id, label, labels, data, color) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { font: { size: 10 } },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initDashboard);
+    </script>
+</body>
+</html>
