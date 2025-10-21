@@ -133,6 +133,54 @@
             gap: 10px;
         }
 
+        .sidebar-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+        }
+
+        .sidebar-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
         .left-column::-webkit-scrollbar {
             width: 8px;
         }
@@ -224,13 +272,6 @@
             flex-direction: column;
             gap: 15px;
             height: fit-content;
-        }
-
-        .indicators-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: auto auto auto;
-            gap: 15px;
         }
 
         .indicators-grid {
@@ -521,78 +562,22 @@
                     <div class="sidebar-value" id="sideIndTreatmentRate" style="font-size: 18px;">98%</div>
                     <div class="sidebar-subtitle">Confirmed treated</div>
                 </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Placeholder</div>
+                    <div class="sidebar-value">-</div>
+                    <div class="sidebar-subtitle">Reserved</div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <div class="sidebar-label">Placeholder</div>
+                    <div class="sidebar-value">-</div>
+                    <div class="sidebar-subtitle">Reserved</div>
+                </div>
             </div>
         </div>
 
         <div class="middle-column">
-            <div class="indicators-grid">
-                <div class="indicator-card">
-                    <div class="indicator-label">Total OPD Visits</div>
-                    <div class="indicator-value" id="indOPD">45,230</div>
-                    <div class="indicator-subtitle">All age groups</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Suspected Cases</div>
-                    <div class="indicator-value" id="indSuspected">12,450</div>
-                    <div class="indicator-subtitle">Facility & Community</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Total Tests</div>
-                    <div class="indicator-value" id="indTests">11,890</div>
-                    <div class="indicator-subtitle">Microscopy & RDT</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Confirmed Cases</div>
-                    <div class="indicator-value" id="indConfirmed">8,234</div>
-                    <div class="indicator-subtitle">Positive results</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Treated Cases</div>
-                    <div class="indicator-value" id="indTreated">8,100</div>
-                    <div class="indicator-subtitle">ACT treatment</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Admissions</div>
-                    <div class="indicator-value" id="indAdmissions">1,234</div>
-                    <div class="indicator-subtitle">Malaria admissions</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Deaths</div>
-                    <div class="indicator-value" id="indDeaths" style="color: #d32f2f;">45</div>
-                    <div class="indicator-subtitle">Malaria-related</div>
-                </div>
-                
-                <div class="indicator-card">
-                    <div class="indicator-label">Test Positivity</div>
-                    <div class="indicator-value" id="indPositivity" style="font-size: 24px;">69.2%</div>
-                    <div class="indicator-subtitle">Confirmed / Tested</div>
-                </div>
-
-                <div class="indicator-card">
-                    <div class="indicator-label">Reporting Rate</div>
-                    <div class="indicator-value" id="indReportingRate" style="font-size: 24px;">88%</div>
-                    <div class="indicator-subtitle">Facilities reporting</div>
-                </div>
-
-                <div class="indicator-card">
-                    <div class="indicator-label">Testing Rate</div>
-                    <div class="indicator-value" id="indTestingRate" style="font-size: 24px;">95%</div>
-                    <div class="indicator-subtitle">Suspected tested</div>
-                </div>
-
-                <div class="indicator-card">
-                    <div class="indicator-label">Treatment Rate</div>
-                    <div class="indicator-value" id="indTreatmentRate" style="font-size: 24px;">98%</div>
-                    <div class="indicator-subtitle">Confirmed treated</div>
-                </div>
-            </div>
-
             <div class="charts-section">
                 <div class="section-title">Key Performance Rates</div>
                 <div class="mini-charts">
@@ -679,10 +664,6 @@
             renderAllCharts();
         }
 
-        function updateCurrentSelection(name, type) {
-            // Removed - no longer needed
-        }
-
         function handleHeaderDistrictChange() {
             const district = document.getElementById('headerDistrictSelect').value;
             
@@ -732,26 +713,6 @@
         function updateIndicators(level) {
             const multiplier = level === 'national' ? 1 : (Math.random() * 0.5 + 0.3);
             
-            // Update middle column indicators
-            document.getElementById('indOPD').textContent = Math.floor(45230 * multiplier).toLocaleString();
-            document.getElementById('indSuspected').textContent = Math.floor(12450 * multiplier).toLocaleString();
-            document.getElementById('indTests').textContent = Math.floor(11890 * multiplier).toLocaleString();
-            document.getElementById('indConfirmed').textContent = Math.floor(8234 * multiplier).toLocaleString();
-            document.getElementById('indTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
-            document.getElementById('indAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
-            document.getElementById('indDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
-            
-            const positivity = (65 + Math.random() * 10).toFixed(1);
-            const reporting = (85 + Math.random() * 10).toFixed(0);
-            const testing = (90 + Math.random() * 8).toFixed(0);
-            const treatment = (96 + Math.random() * 3).toFixed(0);
-            
-            document.getElementById('indPositivity').textContent = positivity + '%';
-            document.getElementById('indReportingRate').textContent = reporting + '%';
-            document.getElementById('indTestingRate').textContent = testing + '%';
-            document.getElementById('indTreatmentRate').textContent = treatment + '%';
-            
-            // Update sidebar indicators
             document.getElementById('sideIndOPD').textContent = Math.floor(45230 * multiplier).toLocaleString();
             document.getElementById('sideIndSuspected').textContent = Math.floor(12450 * multiplier).toLocaleString();
             document.getElementById('sideIndTests').textContent = Math.floor(11890 * multiplier).toLocaleString();
@@ -759,6 +720,12 @@
             document.getElementById('sideIndTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
             document.getElementById('sideIndAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
             document.getElementById('sideIndDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
+            
+            const positivity = (65 + Math.random() * 10).toFixed(1);
+            const reporting = (85 + Math.random() * 10).toFixed(0);
+            const testing = (90 + Math.random() * 8).toFixed(0);
+            const treatment = (96 + Math.random() * 3).toFixed(0);
+            
             document.getElementById('sideIndPositivity').textContent = positivity + '%';
             document.getElementById('sideIndReportingRate').textContent = reporting + '%';
             document.getElementById('sideIndTestingRate').textContent = testing + '%';
