@@ -111,12 +111,11 @@
 
         .main-container {
             display: grid;
-            grid-template-columns: 340px 1fr 1fr 280px;
+            grid-template-columns: 340px 480px 480px 480px 280px;
             gap: 15px;
             max-width: 1900px;
             margin: 20px auto;
             padding: 0 20px 20px 20px;
-            grid-template-rows: auto;
         }
 
         .left-column {
@@ -383,7 +382,6 @@
             flex-direction: column;
             gap: 15px;
             grid-column: 4;
-            grid-row: 1;
         }
 
         .right-column::-webkit-scrollbar {
@@ -405,7 +403,7 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            height: auto;
+            height: calc(100vh - 160px);
             display: flex;
             flex-direction: column;
         }
@@ -415,9 +413,10 @@
             border-radius: 12px;
             padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            height: auto;
+            height: calc(100vh - 160px);
             display: flex;
             flex-direction: column;
+            grid-column: 5;
         }
 
         .monthly-incidence-title {
@@ -433,7 +432,7 @@
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(6, 1fr);
             gap: 8px;
-            height: 500px;
+            flex: 1;
         }
 
         .month-box {
@@ -493,8 +492,7 @@
 
         .chart-large {
             flex: 1;
-            min-height: 500px;
-            height: 500px;
+            min-height: 0;
             position: relative;
         }
 
@@ -672,11 +670,11 @@
                 <div class="chart-title">Monthly Trends - All Indicators (January-December 2025)</div>
                 <div class="chart-large"><canvas id="trendCombined"></canvas></div>
             </div>
-            
-            <div class="monthly-incidence-grid">
-                <div class="monthly-incidence-title">Monthly Incidence Rate</div>
-                <div class="months-grid" id="monthsGrid"></div>
-            </div>
+        </div>
+
+        <div class="monthly-incidence-grid">
+            <div class="monthly-incidence-title">Monthly Incidence Rate</div>
+            <div class="months-grid" id="monthsGrid"></div>
         </div>
     </div>
 
