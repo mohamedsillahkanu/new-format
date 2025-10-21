@@ -410,7 +410,7 @@
         }
 
         .chart-large {
-            height: 280px;
+            height: 320px;
             position: relative;
         }
 
@@ -564,15 +564,9 @@
                 </div>
                 
                 <div class="sidebar-card">
-                    <div class="sidebar-label">Placeholder</div>
-                    <div class="sidebar-value">-</div>
-                    <div class="sidebar-subtitle">Reserved</div>
-                </div>
-                
-                <div class="sidebar-card">
-                    <div class="sidebar-label">Placeholder</div>
-                    <div class="sidebar-value">-</div>
-                    <div class="sidebar-subtitle">Reserved</div>
+                    <div class="sidebar-label">Crude Incidence</div>
+                    <div class="sidebar-value" id="sideIndIncidence">182</div>
+                    <div class="sidebar-subtitle">Per 1,000 population</div>
                 </div>
             </div>
         </div>
@@ -720,6 +714,7 @@
             document.getElementById('sideIndTreated').textContent = Math.floor(8100 * multiplier).toLocaleString();
             document.getElementById('sideIndAdmissions').textContent = Math.floor(1234 * multiplier).toLocaleString();
             document.getElementById('sideIndDeaths').textContent = Math.floor(45 * multiplier).toLocaleString();
+            document.getElementById('sideIndIncidence').textContent = Math.floor(182 * multiplier).toLocaleString();
             
             const positivity = (65 + Math.random() * 10).toFixed(1);
             const reporting = (85 + Math.random() * 10).toFixed(0);
@@ -734,6 +729,8 @@
 
         function renderAllCharts() {
             const variance = currentSelection === 'national' ? 1 : (0.7 + Math.random() * 0.6);
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             
             renderLine('miniReportingRate', 'Reporting Rate', 
                 ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
@@ -756,33 +753,33 @@
                 '#2e7d32');
             
             renderLine('trendSuspected', 'Suspected Cases', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
-                [1050, 1200, 980, 1350, 1180, 1290].map(v => Math.floor(v * variance)), 
+                months, 
+                [1050, 1200, 980, 1350, 1180, 1290, 1420, 1250, 1180, 1320, 1150, 1280].map(v => Math.floor(v * variance)), 
                 '#fbbf24');
             
             renderLine('trendTesting', 'Tests Performed', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
-                [980, 1150, 920, 1280, 1100, 1210].map(v => Math.floor(v * variance)), 
+                months, 
+                [980, 1150, 920, 1280, 1100, 1210, 1350, 1180, 1120, 1260, 1090, 1220].map(v => Math.floor(v * variance)), 
                 '#2c6693');
             
             renderLine('trendConfirmed', 'Confirmed Cases', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
-                [680, 720, 650, 890, 780, 840].map(v => Math.floor(v * variance)), 
+                months, 
+                [680, 720, 650, 890, 780, 840, 920, 810, 770, 880, 750, 820].map(v => Math.floor(v * variance)), 
                 '#d32f2f');
             
             renderLine('trendTreated', 'Treated Cases', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
-                [650, 690, 625, 860, 745, 810].map(v => Math.floor(v * variance)), 
+                months, 
+                [650, 690, 625, 860, 745, 810, 890, 780, 740, 850, 720, 790].map(v => Math.floor(v * variance)), 
                 '#2e7d32');
             
             renderLine('trendPresumed', 'Presumed Cases', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
-                [70, 80, 60, 90, 75, 80].map(v => Math.floor(v * variance)), 
+                months, 
+                [70, 80, 60, 90, 75, 80, 95, 85, 70, 80, 65, 75].map(v => Math.floor(v * variance)), 
                 '#9c27b0');
             
             renderLine('trendNotTreated', 'Confirmed Not Treated', 
-                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 
-                [30, 30, 25, 30, 35, 30].map(v => Math.floor(v * variance)), 
+                months, 
+                [30, 30, 25, 30, 35, 30, 30, 30, 30, 30, 30, 30].map(v => Math.floor(v * variance)), 
                 '#ff5722');
         }
 
