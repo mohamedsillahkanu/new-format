@@ -111,7 +111,7 @@
 
         .main-container {
             display: grid;
-            grid-template-columns: 340px 960px 480px;
+            grid-template-columns: 340px 480px 480px 480px;
             gap: 15px;
             max-width: 1900px;
             margin: 20px auto;
@@ -268,11 +268,7 @@
         }
 
         .middle-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            height: calc(100vh - 160px);
-            align-content: stretch;
+            display: contents;
         }
 
         .indicators-grid {
@@ -337,7 +333,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: calc(100vh - 160px);
             min-height: 0;
         }
 
@@ -406,6 +402,9 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
         }
 
         .chart-title {
@@ -417,7 +416,8 @@
         }
 
         .chart-large {
-            height: calc(100vh - 210px);
+            flex: 1;
+            min-height: 0;
             position: relative;
         }
 
