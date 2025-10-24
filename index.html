@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -877,27 +877,40 @@
         
         // Load CSV data on page load
         async function loadCSVData() {
+            console.log('🔄 Starting CSV load...');
             try {
                 const response = await fetch('malaria_data_template.csv');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const csvText = await response.text();
+                console.log('📄 CSV file fetched, size:', csvText.length, 'characters');
                 
                 Papa.parse(csvText, {
                     header: true,
                     dynamicTyping: true,
+                    skipEmptyLines: true,
                     complete: function(results) {
-                        rawCSVData = results.data.filter(row => row.District && row.Month);
+                        rawCSVData = results.data.filter(row => row.District && row.Month && row.DataType);
                         console.log('✅ CSV data loaded:', rawCSVData.length, 'rows');
+                        console.log('📊 Sample row:', rawCSVData[0]);
+                        
+                        if (rawCSVData.length === 0) {
+                            alert('⚠️ CSV file is empty or has no valid data rows. Please check your CSV file has data below the header row.');
+                            return;
+                        }
+                        
                         processCSVData();
                         initializeDashboard();
                     },
                     error: function(error) {
                         console.error('❌ Error parsing CSV:', error);
-                        alert('Error loading CSV data. Please check the console and ensure malaria_data_template.csv is in the same folder.');
+                        alert('Error loading CSV data: ' + error.message + '\n\nPlease check:\n1. File is named: malaria_data_template.csv\n2. File is in the same folder as this HTML\n3. File has the correct format');
                     }
                 });
             } catch (error) {
                 console.error('❌ Error loading CSV:', error);
-                alert('Error loading CSV file. Please ensure malaria_data_template.csv is in the same folder as this HTML file.');
+                alert('Error loading CSV file: ' + error.message + '\n\nPlease ensure:\n1. malaria_data_template.csv is in the same folder as this HTML file\n2. You are opening this file through a web server or allowing local file access\n3. The CSV file is properly formatted');
             }
         }
         
@@ -954,13 +967,18 @@
         
         // Get data from CSV for specific level and data type
         function getCSVDataForLevel(level, dataType) {
+            console.log('🔍 Getting CSV data for:', level, dataType, 'Year:', currentTimePeriod);
+            
             if (!rawCSVData || rawCSVData.length === 0) {
-                console.error('No CSV data available');
+                console.error('❌ No CSV data available in rawCSVData');
                 return null;
             }
             
+            console.log('📊 Total CSV rows available:', rawCSVData.length);
+            
             // Filter by data type
             let filteredData = rawCSVData.filter(row => row.DataType === dataType);
+            console.log('📋 Rows matching DataType', dataType + ':', filteredData.length);
             
             // Filter by level (district/chiefdom or national)
             if (level !== 'national') {
@@ -970,17 +988,22 @@
                     filteredData = filteredData.filter(row => 
                         row.District === district.trim() && row.Chiefdom === chiefdom.trim()
                     );
+                    console.log('🏘️ Rows for chiefdom', chiefdom + ':', filteredData.length);
                 } else {
                     // It's a district
                     filteredData = filteredData.filter(row => row.District === level);
+                    console.log('🏙️ Rows for district', level + ':', filteredData.length);
                 }
+            } else {
+                console.log('🌍 Using all districts (national level)');
             }
             
             // Filter by time period (year)
             filteredData = filteredData.filter(row => row.Year == currentTimePeriod);
+            console.log('📅 Rows for year', currentTimePeriod + ':', filteredData.length);
             
             if (filteredData.length === 0) {
-                console.warn('No data found for', level, dataType, currentTimePeriod);
+                console.warn('⚠️ No data found for', level, dataType, currentTimePeriod);
                 return null;
             }
             
@@ -996,6 +1019,12 @@
                 presumed: 0,
                 population: 0,
                 reporting: 0,
+                // Calculated fields from CSV
+                positivity: 0,
+                testing: 0,
+                treatment: 0,
+                fatality: 0,
+                incidence: 0,
                 // Intervention metrics
                 iptp: 0,
                 ipti: 0,
@@ -1019,6 +1048,7 @@
             let reportingCount = 0;
             let interventionCount = 0;
             let stockoutCount = 0;
+            let calculatedCount = 0;
             
             filteredData.forEach(row => {
                 aggregated.opd += row.OPD_Visits || 0;
@@ -1035,6 +1065,17 @@
                     aggregated.reporting += parseFloat(row.Reporting_Rate) || 0;
                     reportingCount++;
                 }
+                
+                // Read calculated fields directly from CSV
+                if (row.Test_Positivity_Rate !== undefined && row.Test_Positivity_Rate !== null && row.Test_Positivity_Rate !== '') {
+                    aggregated.positivity += parseFloat(row.Test_Positivity_Rate) || 0;
+                    calculatedCount++;
+                }
+                if (row.Testing_Rate) aggregated.testing += parseFloat(row.Testing_Rate) || 0;
+                if (row.Treatment_Rate) aggregated.treatment += parseFloat(row.Treatment_Rate) || 0;
+                if (row.Case_Fatality_Rate) aggregated.fatality += parseFloat(row.Case_Fatality_Rate) || 0;
+                if (row.Incidence_Per_1000) aggregated.incidence += parseFloat(row.Incidence_Per_1000) || 0;
+                if (row.Untreated_Cases) aggregated.untreated += parseFloat(row.Untreated_Cases) || 0;
                 
                 // Intervention metrics (average percentages)
                 if (row.IPTp_Coverage) {
@@ -1083,23 +1124,15 @@
                 aggregated.actStockout = (aggregated.actStockout / stockoutCount).toFixed(0);
             }
             
-            // Calculate derived metrics
-            if (aggregated.tests > 0) {
-                aggregated.positivity = ((aggregated.confirmed / aggregated.tests) * 100).toFixed(1);
+            // Average the calculated metrics from CSV (don't recalculate!)
+            if (calculatedCount > 0) {
+                aggregated.positivity = (aggregated.positivity / calculatedCount).toFixed(1);
+                aggregated.testing = (aggregated.testing / calculatedCount).toFixed(0);
+                aggregated.treatment = (aggregated.treatment / calculatedCount).toFixed(0);
+                aggregated.fatality = (aggregated.fatality / calculatedCount).toFixed(2);
+                aggregated.incidence = (aggregated.incidence / calculatedCount).toFixed(1);
             }
-            if (aggregated.suspected > 0) {
-                aggregated.testing = ((aggregated.tests / aggregated.suspected) * 100).toFixed(0);
-            }
-            if (aggregated.confirmed > 0) {
-                aggregated.treatment = ((aggregated.treated / aggregated.confirmed) * 100).toFixed(0);
-                aggregated.fatality = ((aggregated.deaths / aggregated.confirmed) * 100).toFixed(2);
-            }
-            if (aggregated.population > 0) {
-                aggregated.incidence = ((aggregated.confirmed / aggregated.population) * 1000).toFixed(1);
-            }
-            
-            // Calculate untreated cases for stockout data type
-            aggregated.untreated = Math.max(0, aggregated.confirmed - aggregated.treated);
+            // Untreated is already summed, don't average it
             
             return aggregated;
         }
@@ -1152,14 +1185,19 @@
                     const presumed = monthData.reduce((sum, row) => sum + (row.Presumed_Cases || 0), 0);
                     const reportingSum = monthData.reduce((sum, row) => sum + (row.Reporting_Rate || 0), 0);
                     
+                    // Read calculated values from CSV instead of calculating
+                    const positivitySum = monthData.reduce((sum, row) => sum + (parseFloat(row.Test_Positivity_Rate) || 0), 0);
+                    const testingSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Testing_Rate) || 0), 0);
+                    const treatmentSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Treatment_Rate) || 0), 0);
+                    
                     monthlyData.suspected.push(suspected);
                     monthlyData.tests.push(tests);
                     monthlyData.confirmed.push(confirmed);
                     monthlyData.treated.push(treated);
                     monthlyData.presumed.push(presumed);
-                    monthlyData.positivity.push(tests > 0 ? parseFloat(((confirmed / tests) * 100).toFixed(1)) : 0);
-                    monthlyData.testing.push(suspected > 0 ? parseFloat(((tests / suspected) * 100).toFixed(1)) : 0);
-                    monthlyData.treatment.push(confirmed > 0 ? parseFloat(((treated / confirmed) * 100).toFixed(1)) : 0);
+                    monthlyData.positivity.push(monthData.length > 0 ? parseFloat((positivitySum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.testing.push(monthData.length > 0 ? parseFloat((testingSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.treatment.push(monthData.length > 0 ? parseFloat((treatmentSum / monthData.length).toFixed(1)) : 0);
                     monthlyData.reporting.push(monthData.length > 0 ? parseFloat((reportingSum / monthData.length).toFixed(1)) : 0);
                 } else {
                     monthlyData.suspected.push(0);
@@ -1415,25 +1453,44 @@
         }
 
         function renderMonthlyIncidence() {
-            // Get monthly incidence data from CSV
-            const monthlyData = getMonthlyCSVData(currentSelection, currentDataType);
-            
-            if (!monthlyData) {
-                console.warn('No monthly incidence data available');
-                return;
-            }
-            
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
             const monthsGrid = document.getElementById('monthsGrid');
             monthsGrid.innerHTML = '';
 
-            // Calculate incidence per 1000 population for each month
-            const data = getCSVDataForLevel(currentSelection, currentDataType);
-            const population = data ? data.population : 1000000; // Use actual population or default
+            if (!rawCSVData || rawCSVData.length === 0) {
+                console.warn('No CSV data for monthly incidence');
+                return;
+            }
             
-            monthNames.forEach((name, index) => {
-                const confirmed = monthlyData.confirmed[index] || 0;
-                const incidence = population > 0 ? Math.round((confirmed / population) * 1000) : 0;
+            // Filter data by current selection and data type
+            let filteredData = rawCSVData.filter(row => 
+                row.DataType === currentDataType && row.Year == currentTimePeriod
+            );
+            
+            if (currentSelection !== 'national') {
+                if (currentSelection.includes(',')) {
+                    const [district, chiefdom] = currentSelection.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                } else {
+                    filteredData = filteredData.filter(row => row.District === currentSelection);
+                }
+            }
+            
+            monthOrder.forEach((fullMonth, index) => {
+                const monthData = filteredData.filter(row => row.Month === fullMonth);
+                
+                // Get incidence directly from CSV
+                let incidence = 0;
+                if (monthData.length > 0) {
+                    const incidenceSum = monthData.reduce((sum, row) => 
+                        sum + (parseFloat(row.Incidence_Per_1000) || 0), 0
+                    );
+                    incidence = Math.round(incidenceSum / monthData.length);
+                }
                 
                 let colorClass = '';
                 if (incidence < 250) {
@@ -1449,7 +1506,7 @@
                 const monthBox = document.createElement('div');
                 monthBox.className = `month-box ${colorClass}`;
                 monthBox.innerHTML = `
-                    <div class="month-name">${name}</div>
+                    <div class="month-name">${monthNames[index]}</div>
                     <div class="month-value">${incidence}</div>
                 `;
                 monthsGrid.appendChild(monthBox);
