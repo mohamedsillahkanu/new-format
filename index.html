@@ -684,6 +684,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         // ============================================
         // DHIS2 CONFIGURATION
@@ -816,6 +817,98 @@
         let currentDataType = 'surveillance';
         let useDHIS2Data = true; // Auto-enable DHIS2 data when running as DHIS2 app
         let dhis2Cache = {}; // Cache DHIS2 data
+        
+        // CSV Data Storage
+        let csvData = null;
+        let useCSVData = false; // Toggle between hard-coded and CSV data
+
+        // Load CSV Data
+        async function loadCSVData() {
+            try {
+                const response = await fetch('malaria_data.csv');
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        csvData = results.data.filter(row => row.District && row.Month);
+                        console.log('CSV data loaded:', csvData.length, 'rows');
+                        useCSVData = true;
+                        // Refresh dashboard with CSV data
+                        updateDashboard();
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                        useCSVData = false;
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                useCSVData = false;
+            }
+        }
+        
+        // Call CSV loader on page load
+        if (typeof Papa !== 'undefined') {
+            window.addEventListener('load', loadCSVData);
+        }
+        
+        // Function to get data from CSV for a specific district/level
+        function getCSVData(level) {
+            if (!csvData || csvData.length === 0) return null;
+            
+            // Filter data by district (or use all data for 'national')
+            let filteredData = csvData;
+            if (level !== 'national') {
+                filteredData = csvData.filter(row => row.District === level);
+            }
+            
+            if (filteredData.length === 0) return null;
+            
+            // Calculate totals across all months
+            const totals = {
+                suspected: 0,
+                tests: 0,
+                confirmed: 0,
+                treated: 0,
+                presumed: 0,
+                opd: 0,
+                admissions: 0,
+                deaths: 0,
+                population: 0
+            };
+            
+            filteredData.forEach(row => {
+                totals.suspected += row.Suspected_Cases || 0;
+                totals.tests += row.Tests_Performed || 0;
+                totals.confirmed += row.Confirmed_Cases || 0;
+                totals.treated += row.Treated_Cases || 0;
+                totals.presumed += row.Presumed_Cases || 0;
+                if (row.Population) totals.population = row.Population;
+            });
+            
+            // Calculate derived metrics
+            const data = {
+                opd: totals.suspected, // Using suspected as proxy for OPD
+                suspected: totals.suspected,
+                tests: totals.tests,
+                confirmed: totals.confirmed,
+                treated: totals.treated,
+                presumed: totals.presumed,
+                admissions: Math.floor(totals.confirmed * 0.15), // Estimate
+                deaths: Math.floor(totals.confirmed * 0.005), // Estimate 0.5% CFR
+                positivity: totals.tests > 0 ? ((totals.confirmed / totals.tests) * 100).toFixed(1) : 0,
+                testing: totals.suspected > 0 ? ((totals.tests / totals.suspected) * 100).toFixed(0) : 0,
+                treatment: totals.confirmed > 0 ? ((totals.treated / totals.confirmed) * 100).toFixed(0) : 0,
+                incidence: totals.population > 0 ? ((totals.confirmed / totals.population) * 1000).toFixed(1) : 0,
+                reporting: 88, // Default
+                fatality: totals.confirmed > 0 ? ((Math.floor(totals.confirmed * 0.005) / totals.confirmed) * 100).toFixed(2) : 0
+            };
+            
+            return data;
+        }
+
 
         // Card configurations for different data types
         const cardConfigs = {
@@ -1364,8 +1457,13 @@
         function updateIndicators(level) {
             let data;
             
-            // Try to get DHIS2 data first if enabled
-            if (useDHIS2Data && dhis2Cache[level]) {
+            // Priority: 1. CSV Data, 2. DHIS2 Data, 3. Sample Data
+            if (useCSVData && csvData) {
+                console.log('Using CSV data for', level);
+                data = getCSVData(level);
+            }
+            // Try to get DHIS2 data if no CSV data
+            else if (useDHIS2Data && dhis2Cache[level]) {
                 console.log('Using DHIS2 data for', level);
                 data = {};
                 
