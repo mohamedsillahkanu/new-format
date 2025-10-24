@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malaria</title>
+    <title>Malaria Analytics Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -596,8 +596,8 @@
     <div class="header">
         <div class="header-content">
             <div class="header-title-section">
-                <h1 style="font-size: 28px; font-weight: 900;">Malaria</h1>
-                <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;"></div>
+                <h1 style="font-size: 28px; font-weight: 900;">Malaria Analytics Dashboard</h1>
+                <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">Comprehensive Surveillance & Treatment Monitoring</div>
             </div>
             
             <div class="header-filters">
@@ -640,9 +640,9 @@
                 
                 <button class="header-reset-btn" onclick="resetSelection()">Reset</button>
                 
-                <button class="header-reset-btn" onclick="toggleDataSource()" id="dataSourceBtn" style="background: rgba(46, 125, 50, 0.8);">
-                    📡 Load from DHIS2
-                </button>
+                <div style="background: rgba(46, 125, 50, 0.8); color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+                    📊 Data Source: CSV
+                </div>
                 
                 <div class="filter-indicator" id="filterIndicator">
                     📊 Filtering Active
@@ -817,98 +817,6 @@
         let currentDataType = 'surveillance';
         let useDHIS2Data = true; // Auto-enable DHIS2 data when running as DHIS2 app
         let dhis2Cache = {}; // Cache DHIS2 data
-        
-        // CSV Data Storage
-        let csvData = null;
-        let useCSVData = false; // Toggle between hard-coded and CSV data
-
-        // Load CSV Data
-        async function loadCSVData() {
-            try {
-                const response = await fetch('malaria_data.csv');
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
-                    header: true,
-                    dynamicTyping: true,
-                    complete: function(results) {
-                        csvData = results.data.filter(row => row.District && row.Month);
-                        console.log('CSV data loaded:', csvData.length, 'rows');
-                        useCSVData = true;
-                        // Refresh dashboard with CSV data
-                        updateDashboard();
-                    },
-                    error: function(error) {
-                        console.error('Error parsing CSV:', error);
-                        useCSVData = false;
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading CSV:', error);
-                useCSVData = false;
-            }
-        }
-        
-        // Call CSV loader on page load
-        if (typeof Papa !== 'undefined') {
-            window.addEventListener('load', loadCSVData);
-        }
-        
-        // Function to get data from CSV for a specific district/level
-        function getCSVData(level) {
-            if (!csvData || csvData.length === 0) return null;
-            
-            // Filter data by district (or use all data for 'national')
-            let filteredData = csvData;
-            if (level !== 'national') {
-                filteredData = csvData.filter(row => row.District === level);
-            }
-            
-            if (filteredData.length === 0) return null;
-            
-            // Calculate totals across all months
-            const totals = {
-                suspected: 0,
-                tests: 0,
-                confirmed: 0,
-                treated: 0,
-                presumed: 0,
-                opd: 0,
-                admissions: 0,
-                deaths: 0,
-                population: 0
-            };
-            
-            filteredData.forEach(row => {
-                totals.suspected += row.Suspected_Cases || 0;
-                totals.tests += row.Tests_Performed || 0;
-                totals.confirmed += row.Confirmed_Cases || 0;
-                totals.treated += row.Treated_Cases || 0;
-                totals.presumed += row.Presumed_Cases || 0;
-                if (row.Population) totals.population = row.Population;
-            });
-            
-            // Calculate derived metrics
-            const data = {
-                opd: totals.suspected, // Using suspected as proxy for OPD
-                suspected: totals.suspected,
-                tests: totals.tests,
-                confirmed: totals.confirmed,
-                treated: totals.treated,
-                presumed: totals.presumed,
-                admissions: Math.floor(totals.confirmed * 0.15), // Estimate
-                deaths: Math.floor(totals.confirmed * 0.005), // Estimate 0.5% CFR
-                positivity: totals.tests > 0 ? ((totals.confirmed / totals.tests) * 100).toFixed(1) : 0,
-                testing: totals.suspected > 0 ? ((totals.tests / totals.suspected) * 100).toFixed(0) : 0,
-                treatment: totals.confirmed > 0 ? ((totals.treated / totals.confirmed) * 100).toFixed(0) : 0,
-                incidence: totals.population > 0 ? ((totals.confirmed / totals.population) * 1000).toFixed(1) : 0,
-                reporting: 88, // Default
-                fatality: totals.confirmed > 0 ? ((Math.floor(totals.confirmed * 0.005) / totals.confirmed) * 100).toFixed(2) : 0
-            };
-            
-            return data;
-        }
-
 
         // Card configurations for different data types
         const cardConfigs = {
@@ -963,220 +871,68 @@
         };
 
         // Data variations for different districts and time periods
-        const dataVariations = {
-            'surveillance': {
-                '2024': {
-                    'national': {
-                        opd: 45230, suspected: 12450, tests: 11890, confirmed: 8234, 
-                        treated: 8100, admissions: 1234, deaths: 45, incidence: 182, 
-                        presumed: 560, positivity: 69.2, reporting: 88, testing: 95, 
-                        treatment: 98, fatality: 0.55
+        // Data will be loaded from CSV file
+        let csvData = [];
+        let rawCSVData = [];
+        
+        // Load CSV data on page load
+        async function loadCSVData() {
+            try {
+                const response = await fetch('malaria_data_template.csv');
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        rawCSVData = results.data.filter(row => row.District && row.Month);
+                        console.log('✅ CSV data loaded:', rawCSVData.length, 'rows');
+                        processCSVData();
+                        initializeDashboard();
                     },
-                    'Bo': {
-                        opd: 18920, suspected: 5230, tests: 4980, confirmed: 3456, 
-                        treated: 3390, admissions: 520, deaths: 18, incidence: 195, 
-                        presumed: 234, positivity: 69.4, reporting: 92, testing: 95, 
-                        treatment: 98, fatality: 0.52
-                    },
-                    'Kenema': {
-                        opd: 16340, suspected: 4480, tests: 4280, confirmed: 2967, 
-                        treated: 2910, admissions: 445, deaths: 15, incidence: 188, 
-                        presumed: 198, positivity: 69.3, reporting: 89, testing: 96, 
-                        treatment: 98, fatality: 0.51
-                    },
-                    'Kono': {
-                        opd: 12780, suspected: 3520, tests: 3360, confirmed: 2330, 
-                        treated: 2285, admissions: 350, deaths: 11, incidence: 179, 
-                        presumed: 156, positivity: 69.3, reporting: 85, testing: 95, 
-                        treatment: 98, fatality: 0.47
-                    },
-                    'Western Area': {
-                        opd: 22145, suspected: 6090, tests: 5820, confirmed: 4035, 
-                        treated: 3960, admissions: 605, deaths: 21, incidence: 176, 
-                        presumed: 270, positivity: 69.3, reporting: 94, testing: 96, 
-                        treatment: 98, fatality: 0.52
-                    },
-                    'Port Loko': {
-                        opd: 14890, suspected: 4095, tests: 3910, confirmed: 2712, 
-                        treated: 2660, admissions: 408, deaths: 13, incidence: 185, 
-                        presumed: 181, positivity: 69.4, reporting: 87, testing: 95, 
-                        treatment: 98, fatality: 0.48
+                    error: function(error) {
+                        console.error('❌ Error parsing CSV:', error);
+                        alert('Error loading CSV data. Please check the console and ensure malaria_data_template.csv is in the same folder.');
                     }
-                },
-                '2023': {
-                    'national': {
-                        opd: 42180, suspected: 11620, tests: 11090, confirmed: 7690, 
-                        treated: 7560, admissions: 1150, deaths: 42, incidence: 170, 
-                        presumed: 523, positivity: 69.4, reporting: 86, testing: 95, 
-                        treatment: 98, fatality: 0.55
-                    },
-                    'Bo': {
-                        opd: 17650, suspected: 4880, tests: 4650, confirmed: 3230, 
-                        treated: 3170, admissions: 486, deaths: 17, incidence: 182, 
-                        presumed: 218, positivity: 69.5, reporting: 90, testing: 95, 
-                        treatment: 98, fatality: 0.53
-                    }
-                },
-                '2022': {
-                    'national': {
-                        opd: 39340, suspected: 10850, tests: 10350, confirmed: 7180, 
-                        treated: 7060, admissions: 1074, deaths: 39, incidence: 159, 
-                        presumed: 488, positivity: 69.4, reporting: 84, testing: 95, 
-                        treatment: 98, fatality: 0.54
-                    }
-                }
-            },
-            'intervention': {
-                '2024': {
-                    'national': {
-                        opd: 38540, suspected: 9870, tests: 9650, confirmed: 6720, 
-                        treated: 6590, admissions: 1015, deaths: 38, incidence: 149, 
-                        presumed: 445, positivity: 69.6, reporting: 91, testing: 98, 
-                        treatment: 98, fatality: 0.57,
-                        iptp: 78, ipti: 72, anc: 94, anc4: 68, penta3: 89,
-                        vaccine: 45, llin: 82, llinUsage: 65, irs: 28, smc: 56,
-                        averted: 4280
-                    },
-                    'Bo': {
-                        opd: 16120, suspected: 4140, tests: 4050, confirmed: 2820, 
-                        treated: 2765, admissions: 426, deaths: 15, incidence: 159, 
-                        presumed: 186, positivity: 69.6, reporting: 94, testing: 98, 
-                        treatment: 98, fatality: 0.53,
-                        iptp: 82, ipti: 75, anc: 96, anc4: 72, penta3: 91,
-                        vaccine: 48, llin: 85, llinUsage: 68, irs: 32, smc: 60,
-                        averted: 1795
-                    },
-                    'Kenema': {
-                        opd: 13910, suspected: 3550, tests: 3470, confirmed: 2415, 
-                        treated: 2370, admissions: 364, deaths: 13, incidence: 153, 
-                        presumed: 157, positivity: 69.6, reporting: 92, testing: 98, 
-                        treatment: 98, fatality: 0.54,
-                        iptp: 80, ipti: 73, anc: 95, anc4: 70, penta3: 90,
-                        vaccine: 46, llin: 83, llinUsage: 66, irs: 30, smc: 58,
-                        averted: 1540
-                    },
-                    'Kono': {
-                        opd: 10880, suspected: 2790, tests: 2730, confirmed: 1900, 
-                        treated: 1865, admissions: 287, deaths: 9, incidence: 146, 
-                        presumed: 124, positivity: 69.6, reporting: 88, testing: 98, 
-                        treatment: 98, fatality: 0.47,
-                        iptp: 76, ipti: 70, anc: 92, anc4: 66, penta3: 87,
-                        vaccine: 43, llin: 80, llinUsage: 63, irs: 26, smc: 54,
-                        averted: 1210
-                    },
-                    'Western Area': {
-                        opd: 18860, suspected: 4830, tests: 4725, confirmed: 3290, 
-                        treated: 3225, admissions: 495, deaths: 17, incidence: 144, 
-                        presumed: 215, positivity: 69.6, reporting: 96, testing: 98, 
-                        treatment: 98, fatality: 0.52,
-                        iptp: 84, ipti: 77, anc: 97, anc4: 74, penta3: 92,
-                        vaccine: 50, llin: 86, llinUsage: 70, irs: 34, smc: 62,
-                        averted: 2090
-                    },
-                    'Port Loko': {
-                        opd: 12680, suspected: 3245, tests: 3175, confirmed: 2210, 
-                        treated: 2170, admissions: 334, deaths: 11, incidence: 151, 
-                        presumed: 144, positivity: 69.6, reporting: 90, testing: 98, 
-                        treatment: 98, fatality: 0.50,
-                        iptp: 77, ipti: 71, anc: 93, anc4: 67, penta3: 88,
-                        vaccine: 44, llin: 81, llinUsage: 64, irs: 29, smc: 55,
-                        averted: 1405
-                    }
-                },
-                '2023': {
-                    'national': {
-                        opd: 35930, suspected: 9210, tests: 9010, confirmed: 6275, 
-                        treated: 6155, admissions: 947, deaths: 35, incidence: 139, 
-                        presumed: 415, positivity: 69.7, reporting: 89, testing: 98, 
-                        treatment: 98, fatality: 0.56
-                    }
-                },
-                '2022': {
-                    'national': {
-                        opd: 33520, suspected: 8590, tests: 8410, confirmed: 5855, 
-                        treated: 5745, admissions: 884, deaths: 33, incidence: 130, 
-                        presumed: 387, positivity: 69.6, reporting: 87, testing: 98, 
-                        treatment: 98, fatality: 0.56
-                    }
-                }
-            },
-            'stockout': {
-                '2024': {
-                    'national': {
-                        opd: 45230, suspected: 12450, tests: 9870, confirmed: 6876, 
-                        treated: 5890, admissions: 1456, deaths: 67, incidence: 152, 
-                        presumed: 890, positivity: 69.7, reporting: 88, testing: 79, 
-                        treatment: 86, fatality: 0.97,
-                        rdtStock: 12, rdtStockout: 42, actStock: 18, actStockout: 35,
-                        untreated: 986
-                    },
-                    'Bo': {
-                        opd: 18920, suspected: 5230, tests: 4140, confirmed: 2885, 
-                        treated: 2470, admissions: 612, deaths: 28, incidence: 163, 
-                        presumed: 374, positivity: 69.7, reporting: 92, testing: 79, 
-                        treatment: 86, fatality: 0.97,
-                        rdtStock: 10, rdtStockout: 45, actStock: 15, actStockout: 38,
-                        untreated: 415
-                    },
-                    'Kenema': {
-                        opd: 16340, suspected: 4480, tests: 3540, confirmed: 2468, 
-                        treated: 2115, admissions: 524, deaths: 24, incidence: 157, 
-                        presumed: 320, positivity: 69.7, reporting: 89, testing: 79, 
-                        treatment: 86, fatality: 0.97,
-                        rdtStock: 11, rdtStockout: 43, actStock: 16, actStockout: 36,
-                        untreated: 353
-                    },
-                    'Kono': {
-                        opd: 12780, suspected: 3520, tests: 2780, confirmed: 1938, 
-                        treated: 1660, admissions: 412, deaths: 19, incidence: 149, 
-                        presumed: 251, positivity: 69.7, reporting: 85, testing: 79, 
-                        treatment: 86, fatality: 0.98,
-                        rdtStock: 9, rdtStockout: 48, actStock: 14, actStockout: 40,
-                        untreated: 278
-                    },
-                    'Western Area': {
-                        opd: 22145, suspected: 6090, tests: 4810, confirmed: 3354, 
-                        treated: 2875, admissions: 712, deaths: 33, incidence: 147, 
-                        presumed: 435, positivity: 69.7, reporting: 94, testing: 79, 
-                        treatment: 86, fatality: 0.98,
-                        rdtStock: 14, rdtStockout: 38, actStock: 20, actStockout: 32,
-                        untreated: 479
-                    },
-                    'Port Loko': {
-                        opd: 14890, suspected: 4095, tests: 3235, confirmed: 2255, 
-                        treated: 1932, admissions: 480, deaths: 22, incidence: 154, 
-                        presumed: 292, positivity: 69.7, reporting: 87, testing: 79, 
-                        treatment: 86, fatality: 0.98,
-                        rdtStock: 10, rdtStockout: 46, actStock: 17, actStockout: 37,
-                        untreated: 323
-                    }
-                },
-                '2023': {
-                    'national': {
-                        opd: 42180, suspected: 11620, tests: 9215, confirmed: 6422, 
-                        treated: 5504, admissions: 1358, deaths: 62, incidence: 142, 
-                        presumed: 831, positivity: 69.7, reporting: 86, testing: 79, 
-                        treatment: 86, fatality: 0.97
-                    }
-                },
-                '2022': {
-                    'national': {
-                        opd: 39340, suspected: 10850, tests: 8605, confirmed: 5997, 
-                        treated: 5138, admissions: 1268, deaths: 58, incidence: 133, 
-                        presumed: 776, positivity: 69.7, reporting: 84, testing: 79, 
-                        treatment: 86, fatality: 0.97
-                    }
-                }
+                });
+            } catch (error) {
+                console.error('❌ Error loading CSV:', error);
+                alert('Error loading CSV file. Please ensure malaria_data_template.csv is in the same folder as this HTML file.');
             }
-        };
+        }
+        
+        // Process CSV data into usable format
+        function processCSVData() {
+            csvData = rawCSVData;
+            console.log('Processed CSV data ready');
+        }
+        
+        // Call CSV loader on page load
+        window.addEventListener('load', loadCSVData);
 
-        const chiefdomsData = {
-            'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
-            'Kenema': ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'],
-            'Kono': ['Gbane', 'Gbense', 'Lei', 'Nimikoro'],
-            'Western Area': ['Urban', 'Rural'],
-            'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
-        };
+
+        // Chiefdoms will be populated from CSV data
+        let chiefdomsData = {};
+        
+        function extractChiefdomsFromCSV() {
+            chiefdomsData = {};
+            rawCSVData.forEach(row => {
+                if (row.District && row.Chiefdom) {
+                    if (!chiefdomsData[row.District]) {
+                        chiefdomsData[row.District] = [];
+                    }
+                    if (!chiefdomsData[row.District].includes(row.Chiefdom)) {
+                        chiefdomsData[row.District].push(row.Chiefdom);
+                    }
+                }
+            });
+            console.log('Chiefdoms extracted from CSV:', chiefdomsData);
+        }
+
+        function initializeDashboard() {
+            extractChiefdomsFromCSV();
+            initDashboard();
+        }
 
         function initDashboard() {
             renderCards();
@@ -1457,13 +1213,8 @@
         function updateIndicators(level) {
             let data;
             
-            // Priority: 1. CSV Data, 2. DHIS2 Data, 3. Sample Data
-            if (useCSVData && csvData) {
-                console.log('Using CSV data for', level);
-                data = getCSVData(level);
-            }
-            // Try to get DHIS2 data if no CSV data
-            else if (useDHIS2Data && dhis2Cache[level]) {
+            // Try to get DHIS2 data first if enabled
+            if (useDHIS2Data && dhis2Cache[level]) {
                 console.log('Using DHIS2 data for', level);
                 data = {};
                 
