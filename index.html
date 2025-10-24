@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title-section {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .header-filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-filter-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .header-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c6693;
+            cursor: pointer;
+            min-width: 180px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c6693' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        .header-select:hover {
+            background: white;
+        }
+
+        .header-select:focus {
+            outline: none;
+            border-color: white;
+        }
+
+        .filter-indicator {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid #fbbf24;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .filter-indicator.active {
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .header-reset-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .header-reset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 340px 1.2fr 1.2fr 250px;
+            gap: 5px;
+            max-width: 1900px;
+            margin: 20px auto;
+            padding: 0 20px 20px 20px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            height: calc(100vh - 160px);
+            padding-right: 8px;
+        }
+
+        .sidebar-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            grid-auto-rows: 1fr;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .sidebar-card.active {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.3);
+        }
+
+        .sidebar-card.active .sidebar-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sidebar-card.active .sidebar-value {
+            color: white;
+        }
+
+        .sidebar-card.active .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .sidebar-card.active::before {
+            height: 6px;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .left-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .left-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .geo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .geo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .geo-card.active {
+            background: #2c6693;
+            color: white;
+            font-weight: 700;
+        }
+
+        .geo-card-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .geo-card-name {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .geo-card-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .geo-stat {
+            flex: 1;
+        }
+
+        .geo-stat-label {
+            font-size: 9px;
+            font-weight: 600;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .geo-stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        .geo-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+        }
+
+        .geo-select:focus {
+            outline: none;
+            border-color: #2c6693;
+        }
+
+        .middle-column {
+            display: contents;
+            gap: 5px;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+        }
+
+        .indicator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.15);
+        }
+
+        .indicator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+        }
+
+        .indicator-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .indicator-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 160px);
+            min-height: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #2c6693;
+            text-transform: uppercase;
+        }
+
+        .mini-charts {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .mini-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .mini-chart-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            height: 100%;
+            min-height: 0;
+            position: relative;
+            flex: 1;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            grid-column: 3;
+        }
+
+        .right-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .right-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monthly-incidence-grid {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+            grid-column: 4;
+        }
+
+        .monthly-incidence-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 5px;
+            flex: 1;
+        }
+
+        .month-box {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .month-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .month-name {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .month-value {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .incidence-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .incidence-moderate {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .incidence-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .incidence-very-high {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-large {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        .reset-btn {
+            background: #2c6693;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background: #1f4a6a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .indicators-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .right-column {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .indicators-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title-section">
+                <h1 style="font-size: 28px; font-weight: 900;">Malaria Analytics Dashboard</h1>
+                <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">Comprehensive Surveillance & Treatment Monitoring</div>
+            </div>
+            
+            <div class="header-filters">
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Data Type</label>
+                    <select class="header-select" id="dataTypeSelect" onchange="handleDataTypeChange()">
+                        <option value="surveillance">Surveillance</option>
+                        <option value="intervention">Routine Intervention</option>
+                        <option value="stockout">Stockout</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Time Period</label>
+                    <select class="header-select" id="timePeriodSelect" onchange="handleTimePeriodChange()">
+                        <option value="2024">January 2024 - December 2024</option>
+                        <option value="2023">January 2023 - December 2023</option>
+                        <option value="2022">January 2022 - December 2022</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">District</label>
+                    <select class="header-select" id="headerDistrictSelect" onchange="handleHeaderDistrictChange()">
+                        <option value="">All Districts</option>
+                        <option value="Bo">Bo</option>
+                        <option value="Kenema">Kenema</option>
+                        <option value="Kono">Kono</option>
+                        <option value="Western Area">Western Area</option>
+                        <option value="Port Loko">Port Loko</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Chiefdom</label>
+                    <select class="header-select" id="headerChiefdomSelect" onchange="handleHeaderChiefdomChange()" disabled>
+                        <option value="">Select District First</option>
+                    </select>
+                </div>
+                
+                <button class="header-reset-btn" onclick="resetSelection()">Reset</button>
+                
+                <button class="header-reset-btn" onclick="toggleDataSource()" id="dataSourceBtn" style="background: rgba(46, 125, 50, 0.8);">
+                    📡 Load from DHIS2
+                </button>
+                
+                <div class="filter-indicator" id="filterIndicator">
+                    📊 Filtering Active
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-column">
+            <div class="sidebar-cards-grid" id="sidebarCardsGrid">
+                <!-- Cards will be dynamically populated based on data type -->
+            </div>
+        </div>
+
+        <div class="middle-column">
+            <div class="charts-section">
+                <div class="section-title">Key Performance Rates</div>
+                <div class="mini-charts">
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">All Performance Metrics</div>
+                        <div class="chart-container"><canvas id="combinedRates"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="chart-card">
+                <div class="chart-title" id="chartTitle">Monthly Trends - All Indicators (January-December 2024)</div>
+                <div class="chart-large"><canvas id="trendCombined"></canvas></div>
+            </div>
+        </div>
+
+        <div class="monthly-incidence-grid">
+            <div class="monthly-incidence-title">Monthly Incidence Rate</div>
+            <div class="months-grid" id="monthsGrid"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // ============================================
+        // DHIS2 CONFIGURATION
+        // ============================================
+        const DHIS2_CONFIG = {
+            // When running as DHIS2 app, use relative path (empty string)
+            // The app automatically uses the current DHIS2 instance
+            baseUrl: '', // Leave empty when installed in DHIS2
+            // Authentication is handled automatically by DHIS2 session
+            // No need to provide username/password when running as DHIS2 app
+        };
+
+        // DHIS2 Data Element Mapping
+        // IMPORTANT: Replace these UIDs with your actual DHIS2 data element UIDs
+        // To find UIDs: Go to Maintenance > Data Element > Click on element > Copy UID
+        const DHIS2_DATA_ELEMENTS = {
+            // Surveillance metrics
+            'opd': 'FTRrcoaog83',           // Total OPD Visits
+            'suspected': 'UsSUX0cpKUJ',      // Suspected Malaria Cases
+            'tests': 'nY0vtFGqT0y',          // Malaria Tests Performed
+            'confirmed': 'bJeK5p6fjRA',      // Confirmed Malaria Cases  
+            'treated': 'GRPUUMMEQkQ',        // Treated Malaria Cases
+            'admissions': 'JGnHr6WI3AY',     // Malaria Admissions
+            'deaths': 'DxxPv7J3sHZ',         // Malaria Deaths
+            'presumed': 'x3Do5e7g4Qo',       // Presumed Cases
+            
+            // Intervention metrics
+            'iptp': 'dwEq7wi6nXV',           // IPTp Coverage
+            'ipti': 'YtbsuPPo010',           // IPTi Coverage
+            'anc': 'dqt8GzKUEjt',            // ANC 1st Visit
+            'anc4': 'gXNu7zJBTDN',           // ANC 4+ Visits
+            'penta3': 'Uvn6LCg7dVU',         // Penta3 Coverage
+            'vaccine': 'A03MvHHogjR',        // Malaria Vaccine
+            'llin': 'VxkFIqlrW3B',           // LLIN Distribution
+            'llinUsage': 'TL4j4flC34r',      // LLIN Usage
+            'irs': 'jKuMEHnJhcC',            // IRS Coverage
+            'smc': 'OuudMtJsh2l',            // SMC Coverage
+            
+            // Stockout metrics
+            'rdtStock': 'rVZlkzOwWhi',       // RDT Stock Level
+            'actStock': 'XYzJKMEhjsw'        // ACT Stock Level
+        };
+
+        // Organization Unit Mapping (Add your actual OrgUnit UIDs)
+        const DHIS2_ORG_UNITS = {
+            'national': 'ImspTQPwCqd',       // National level
+            'Bo': 'O6uvpzGd5pu',             // Bo District
+            'Kenema': 'fdc6uOvgoji',         // Kenema District
+            'Kono': 'kJq2mPyFEHo',           // Kono District
+            'Western Area': 'at6UHUQatSo',   // Western Area
+            'Port Loko': 'TEQlaapDQoK'       // Port Loko District
+        };
+
+        // DHIS2 API Helper Functions
+        const DHIS2API = {
+            getAuthHeaders() {
+                // When running as DHIS2 app, authentication is handled by session
+                // No need for explicit auth headers
+                return {
+                    'Content-Type': 'application/json'
+                };
+            },
+
+            async fetchData(endpoint) {
+                try {
+                    // Use relative URL when baseUrl is empty (running as DHIS2 app)
+                    const url = DHIS2_CONFIG.baseUrl ? DHIS2_CONFIG.baseUrl + endpoint : endpoint;
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: this.getAuthHeaders(),
+                        credentials: 'include' // Important: Include credentials for DHIS2 session auth
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('DHIS2 API Error:', error);
+                    return null;
+                }
+            },
+
+            async getAnalyticsData(dataElements, orgUnit, period) {
+                const dx = Array.isArray(dataElements) ? dataElements.join(';') : dataElements;
+                const endpoint = `/api/analytics.json?dimension=dx:${dx}&dimension=ou:${orgUnit}&dimension=pe:${period}&displayProperty=NAME`;
+                return await this.fetchData(endpoint);
+            },
+
+            async getMonthlyData(dataElements, orgUnit, year) {
+                const months = Array.from({length: 12}, (_, i) => {
+                    const month = (i + 1).toString().padStart(2, '0');
+                    return `${year}${month}`;
+                }).join(';');
+                
+                return await this.getAnalyticsData(dataElements, orgUnit, months);
+            },
+
+            async getOrganizationUnits() {
+                const endpoint = '/api/organisationUnits?filter=level:eq:3&fields=id,name,displayName&paging=false';
+                return await this.fetchData(endpoint);
+            },
+
+            parseAnalyticsData(response) {
+                if (!response || !response.rows) return {};
+                
+                const data = {};
+                response.rows.forEach(row => {
+                    const [dx, ou, pe, value] = row;
+                    if (!data[dx]) data[dx] = {};
+                    if (!data[dx][ou]) data[dx][ou] = {};
+                    data[dx][ou][pe] = parseFloat(value) || 0;
+                });
+                
+                return data;
+            }
+        };
+
+        // ============================================
+        // DASHBOARD CODE (Modified to use DHIS2)
+        // ============================================
+        
+        let charts = {};
+        let currentSelection = 'national';
+        let legendFilter = null;
+        let currentTimePeriod = '2024';
+        let activeCardFilter = null;
+        let currentDataType = 'surveillance';
+        let useDHIS2Data = true; // Auto-enable DHIS2 data when running as DHIS2 app
+        let dhis2Cache = {}; // Cache DHIS2 data
+
+        // Card configurations for different data types
+        const cardConfigs = {
+            'surveillance': [
+                { id: 'sideIndOPD', label: 'Total OPD Visits', subtitle: 'All age groups', metric: 'opd' },
+                { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
+                { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Microscopy & RDT', metric: 'tests' },
+                { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
+                { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'ACT treatment', metric: 'treated' },
+                { id: 'sideIndAdmissions', label: 'Admissions', subtitle: 'Malaria admissions', metric: 'admissions' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                { id: 'sideIndPositivity', label: 'Test Positivity', subtitle: 'Confirmed / Tested', metric: 'positivity', isPercent: true },
+                { id: 'sideIndReportingRate', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true },
+                { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Suspected tested', metric: 'testing', isPercent: true },
+                { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Confirmed treated', metric: 'treatment', isPercent: true },
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' },
+                { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                { id: 'sideIndCaseFatality', label: 'Case Fatality', subtitle: 'Deaths / Confirmed', metric: 'fatality', isPercent: true }
+            ],
+            'intervention': [
+                { id: 'sideIndIPTp', label: 'IPTp Coverage', subtitle: 'Pregnant women (3+ doses)', metric: 'iptp', isPercent: true },
+                { id: 'sideIndIPTi', label: 'IPTi Coverage', subtitle: 'Infants immunized', metric: 'ipti', isPercent: true },
+                { id: 'sideIndANC', label: 'ANC Coverage', subtitle: '1st visit', metric: 'anc', isPercent: true },
+                { id: 'sideIndANC4', label: 'ANC4+ Coverage', subtitle: '4+ visits', metric: 'anc4', isPercent: true },
+                { id: 'sideIndPenta3', label: 'Penta3 Coverage', subtitle: 'Children immunized', metric: 'penta3', isPercent: true },
+                { id: 'sideIndMalariaVaccine', label: 'Malaria Vaccine', subtitle: 'Children vaccinated', metric: 'vaccine', isPercent: true },
+                { id: 'sideIndLLIN', label: 'LLIN Distribution', subtitle: 'Households covered', metric: 'llin', isPercent: true },
+                { id: 'sideIndLLINUsage', label: 'LLIN Usage', subtitle: 'Population using nets', metric: 'llinUsage', isPercent: true },
+                { id: 'sideIndIRS', label: 'IRS Coverage', subtitle: 'Households sprayed', metric: 'irs', isPercent: true },
+                { id: 'sideIndSMC', label: 'SMC Coverage', subtitle: 'Seasonal chemoprevention', metric: 'smc', isPercent: true },
+                { id: 'sideIndCasesAverted', label: 'Cases Averted', subtitle: 'Due to interventions', metric: 'averted' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' },
+                { id: 'sideIndReporting', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true }
+            ],
+            'stockout': [
+                { id: 'sideIndRDTStock', label: 'RDT Stock Level', subtitle: 'Days of stock', metric: 'rdtStock' },
+                { id: 'sideIndRDTStockout', label: 'RDT Stockout', subtitle: 'Facilities affected', metric: 'rdtStockout', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACTStock', label: 'ACT Stock Level', subtitle: 'Days of stock', metric: 'actStock' },
+                { id: 'sideIndACTStockout', label: 'ACT Stockout', subtitle: 'Facilities affected', metric: 'actStockout', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
+                { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Limited by RDT', metric: 'tests' },
+                { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
+                { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'Limited by ACT', metric: 'treated' },
+                { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                { id: 'sideIndUntreated', label: 'Untreated Cases', subtitle: 'Due to stockout', metric: 'untreated', color: '#d32f2f' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Limited by supply', metric: 'testing', isPercent: true },
+                { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Limited by supply', metric: 'treatment', isPercent: true },
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' }
+            ]
+        };
+
+        // Data variations for different districts and time periods
+        const dataVariations = {
+            'surveillance': {
+                '2024': {
+                    'national': {
+                        opd: 45230, suspected: 12450, tests: 11890, confirmed: 8234, 
+                        treated: 8100, admissions: 1234, deaths: 45, incidence: 182, 
+                        presumed: 560, positivity: 69.2, reporting: 88, testing: 95, 
+                        treatment: 98, fatality: 0.55
+                    },
+                    'Bo': {
+                        opd: 18920, suspected: 5230, tests: 4980, confirmed: 3456, 
+                        treated: 3390, admissions: 520, deaths: 18, incidence: 195, 
+                        presumed: 234, positivity: 69.4, reporting: 92, testing: 95, 
+                        treatment: 98, fatality: 0.52
+                    },
+                    'Kenema': {
+                        opd: 16340, suspected: 4480, tests: 4280, confirmed: 2967, 
+                        treated: 2910, admissions: 445, deaths: 15, incidence: 188, 
+                        presumed: 198, positivity: 69.3, reporting: 89, testing: 96, 
+                        treatment: 98, fatality: 0.51
+                    },
+                    'Kono': {
+                        opd: 12780, suspected: 3520, tests: 3360, confirmed: 2330, 
+                        treated: 2285, admissions: 350, deaths: 11, incidence: 179, 
+                        presumed: 156, positivity: 69.3, reporting: 85, testing: 95, 
+                        treatment: 98, fatality: 0.47
+                    },
+                    'Western Area': {
+                        opd: 22145, suspected: 6090, tests: 5820, confirmed: 4035, 
+                        treated: 3960, admissions: 605, deaths: 21, incidence: 176, 
+                        presumed: 270, positivity: 69.3, reporting: 94, testing: 96, 
+                        treatment: 98, fatality: 0.52
+                    },
+                    'Port Loko': {
+                        opd: 14890, suspected: 4095, tests: 3910, confirmed: 2712, 
+                        treated: 2660, admissions: 408, deaths: 13, incidence: 185, 
+                        presumed: 181, positivity: 69.4, reporting: 87, testing: 95, 
+                        treatment: 98, fatality: 0.48
+                    }
+                },
+                '2023': {
+                    'national': {
+                        opd: 42180, suspected: 11620, tests: 11090, confirmed: 7690, 
+                        treated: 7560, admissions: 1150, deaths: 42, incidence: 170, 
+                        presumed: 523, positivity: 69.4, reporting: 86, testing: 95, 
+                        treatment: 98, fatality: 0.55
+                    },
+                    'Bo': {
+                        opd: 17650, suspected: 4880, tests: 4650, confirmed: 3230, 
+                        treated: 3170, admissions: 486, deaths: 17, incidence: 182, 
+                        presumed: 218, positivity: 69.5, reporting: 90, testing: 95, 
+                        treatment: 98, fatality: 0.53
+                    }
+                },
+                '2022': {
+                    'national': {
+                        opd: 39340, suspected: 10850, tests: 10350, confirmed: 7180, 
+                        treated: 7060, admissions: 1074, deaths: 39, incidence: 159, 
+                        presumed: 488, positivity: 69.4, reporting: 84, testing: 95, 
+                        treatment: 98, fatality: 0.54
+                    }
+                }
+            },
+            'intervention': {
+                '2024': {
+                    'national': {
+                        opd: 38540, suspected: 9870, tests: 9650, confirmed: 6720, 
+                        treated: 6590, admissions: 1015, deaths: 38, incidence: 149, 
+                        presumed: 445, positivity: 69.6, reporting: 91, testing: 98, 
+                        treatment: 98, fatality: 0.57,
+                        iptp: 78, ipti: 72, anc: 94, anc4: 68, penta3: 89,
+                        vaccine: 45, llin: 82, llinUsage: 65, irs: 28, smc: 56,
+                        averted: 4280
+                    },
+                    'Bo': {
+                        opd: 16120, suspected: 4140, tests: 4050, confirmed: 2820, 
+                        treated: 2765, admissions: 426, deaths: 15, incidence: 159, 
+                        presumed: 186, positivity: 69.6, reporting: 94, testing: 98, 
+                        treatment: 98, fatality: 0.53,
+                        iptp: 82, ipti: 75, anc: 96, anc4: 72, penta3: 91,
+                        vaccine: 48, llin: 85, llinUsage: 68, irs: 32, smc: 60,
+                        averted: 1795
+                    },
+                    'Kenema': {
+                        opd: 13910, suspected: 3550, tests: 3470, confirmed: 2415, 
+                        treated: 2370, admissions: 364, deaths: 13, incidence: 153, 
+                        presumed: 157, positivity: 69.6, reporting: 92, testing: 98, 
+                        treatment: 98, fatality: 0.54,
+                        iptp: 80, ipti: 73, anc: 95, anc4: 70, penta3: 90,
+                        vaccine: 46, llin: 83, llinUsage: 66, irs: 30, smc: 58,
+                        averted: 1540
+                    },
+                    'Kono': {
+                        opd: 10880, suspected: 2790, tests: 2730, confirmed: 1900, 
+                        treated: 1865, admissions: 287, deaths: 9, incidence: 146, 
+                        presumed: 124, positivity: 69.6, reporting: 88, testing: 98, 
+                        treatment: 98, fatality: 0.47,
+                        iptp: 76, ipti: 70, anc: 92, anc4: 66, penta3: 87,
+                        vaccine: 43, llin: 80, llinUsage: 63, irs: 26, smc: 54,
+                        averted: 1210
+                    },
+                    'Western Area': {
+                        opd: 18860, suspected: 4830, tests: 4725, confirmed: 3290, 
+                        treated: 3225, admissions: 495, deaths: 17, incidence: 144, 
+                        presumed: 215, positivity: 69.6, reporting: 96, testing: 98, 
+                        treatment: 98, fatality: 0.52,
+                        iptp: 84, ipti: 77, anc: 97, anc4: 74, penta3: 92,
+                        vaccine: 50, llin: 86, llinUsage: 70, irs: 34, smc: 62,
+                        averted: 2090
+                    },
+                    'Port Loko': {
+                        opd: 12680, suspected: 3245, tests: 3175, confirmed: 2210, 
+                        treated: 2170, admissions: 334, deaths: 11, incidence: 151, 
+                        presumed: 144, positivity: 69.6, reporting: 90, testing: 98, 
+                        treatment: 98, fatality: 0.50,
+                        iptp: 77, ipti: 71, anc: 93, anc4: 67, penta3: 88,
+                        vaccine: 44, llin: 81, llinUsage: 64, irs: 29, smc: 55,
+                        averted: 1405
+                    }
+                },
+                '2023': {
+                    'national': {
+                        opd: 35930, suspected: 9210, tests: 9010, confirmed: 6275, 
+                        treated: 6155, admissions: 947, deaths: 35, incidence: 139, 
+                        presumed: 415, positivity: 69.7, reporting: 89, testing: 98, 
+                        treatment: 98, fatality: 0.56
+                    }
+                },
+                '2022': {
+                    'national': {
+                        opd: 33520, suspected: 8590, tests: 8410, confirmed: 5855, 
+                        treated: 5745, admissions: 884, deaths: 33, incidence: 130, 
+                        presumed: 387, positivity: 69.6, reporting: 87, testing: 98, 
+                        treatment: 98, fatality: 0.56
+                    }
+                }
+            },
+            'stockout': {
+                '2024': {
+                    'national': {
+                        opd: 45230, suspected: 12450, tests: 9870, confirmed: 6876, 
+                        treated: 5890, admissions: 1456, deaths: 67, incidence: 152, 
+                        presumed: 890, positivity: 69.7, reporting: 88, testing: 79, 
+                        treatment: 86, fatality: 0.97,
+                        rdtStock: 12, rdtStockout: 42, actStock: 18, actStockout: 35,
+                        untreated: 986
+                    },
+                    'Bo': {
+                        opd: 18920, suspected: 5230, tests: 4140, confirmed: 2885, 
+                        treated: 2470, admissions: 612, deaths: 28, incidence: 163, 
+                        presumed: 374, positivity: 69.7, reporting: 92, testing: 79, 
+                        treatment: 86, fatality: 0.97,
+                        rdtStock: 10, rdtStockout: 45, actStock: 15, actStockout: 38,
+                        untreated: 415
+                    },
+                    'Kenema': {
+                        opd: 16340, suspected: 4480, tests: 3540, confirmed: 2468, 
+                        treated: 2115, admissions: 524, deaths: 24, incidence: 157, 
+                        presumed: 320, positivity: 69.7, reporting: 89, testing: 79, 
+                        treatment: 86, fatality: 0.97,
+                        rdtStock: 11, rdtStockout: 43, actStock: 16, actStockout: 36,
+                        untreated: 353
+                    },
+                    'Kono': {
+                        opd: 12780, suspected: 3520, tests: 2780, confirmed: 1938, 
+                        treated: 1660, admissions: 412, deaths: 19, incidence: 149, 
+                        presumed: 251, positivity: 69.7, reporting: 85, testing: 79, 
+                        treatment: 86, fatality: 0.98,
+                        rdtStock: 9, rdtStockout: 48, actStock: 14, actStockout: 40,
+                        untreated: 278
+                    },
+                    'Western Area': {
+                        opd: 22145, suspected: 6090, tests: 4810, confirmed: 3354, 
+                        treated: 2875, admissions: 712, deaths: 33, incidence: 147, 
+                        presumed: 435, positivity: 69.7, reporting: 94, testing: 79, 
+                        treatment: 86, fatality: 0.98,
+                        rdtStock: 14, rdtStockout: 38, actStock: 20, actStockout: 32,
+                        untreated: 479
+                    },
+                    'Port Loko': {
+                        opd: 14890, suspected: 4095, tests: 3235, confirmed: 2255, 
+                        treated: 1932, admissions: 480, deaths: 22, incidence: 154, 
+                        presumed: 292, positivity: 69.7, reporting: 87, testing: 79, 
+                        treatment: 86, fatality: 0.98,
+                        rdtStock: 10, rdtStockout: 46, actStock: 17, actStockout: 37,
+                        untreated: 323
+                    }
+                },
+                '2023': {
+                    'national': {
+                        opd: 42180, suspected: 11620, tests: 9215, confirmed: 6422, 
+                        treated: 5504, admissions: 1358, deaths: 62, incidence: 142, 
+                        presumed: 831, positivity: 69.7, reporting: 86, testing: 79, 
+                        treatment: 86, fatality: 0.97
+                    }
+                },
+                '2022': {
+                    'national': {
+                        opd: 39340, suspected: 10850, tests: 8605, confirmed: 5997, 
+                        treated: 5138, admissions: 1268, deaths: 58, incidence: 133, 
+                        presumed: 776, positivity: 69.7, reporting: 84, testing: 79, 
+                        treatment: 86, fatality: 0.97
+                    }
+                }
+            }
+        };
+
+        const chiefdomsData = {
+            'Bo': ['Bumpe Ngao', 'Kakua', 'Tikonko', 'Valunia'],
+            'Kenema': ['Dama', 'Gaura', 'Kandu Leppiama', 'Nomo'],
+            'Kono': ['Gbane', 'Gbense', 'Lei', 'Nimikoro'],
+            'Western Area': ['Urban', 'Rural'],
+            'Port Loko': ['Buya Romende', 'Kaffu Bullom', 'Lokomasama']
+        };
+
+        function initDashboard() {
+            renderCards();
+            updateIndicators('national');
+            renderAllCharts();
+            renderMonthlyIncidence();
+            
+            // Auto-load DHIS2 data when dashboard starts
+            if (useDHIS2Data) {
+                loadDHIS2Data();
+            }
+        }
+
+        async function toggleDataSource() {
+            const btn = document.getElementById('dataSourceBtn');
+            
+            if (!useDHIS2Data) {
+                // Switch to DHIS2 data
+                btn.textContent = '⏳ Loading from DHIS2...';
+                btn.disabled = true;
+                
+                const success = await loadDHIS2Data();
+                
+                if (success) {
+                    useDHIS2Data = true;
+                    btn.textContent = '✅ Using DHIS2 Data';
+                    btn.style.background = 'rgba(46, 125, 50, 0.8)';
+                    updateIndicators(currentSelection);
+                    renderAllCharts();
+                    renderMonthlyIncidence();
+                } else {
+                    btn.textContent = '❌ DHIS2 Connection Failed';
+                    btn.style.background = 'rgba(211, 47, 47, 0.8)';
+                    setTimeout(() => {
+                        btn.textContent = '📡 Load from DHIS2';
+                        btn.style.background = 'rgba(46, 125, 50, 0.8)';
+                    }, 3000);
+                }
+                btn.disabled = false;
+            } else {
+                // Switch back to sample data
+                useDHIS2Data = false;
+                btn.textContent = '📡 Load from DHIS2';
+                btn.style.background = 'rgba(46, 125, 50, 0.8)';
+                updateIndicators(currentSelection);
+                renderAllCharts();
+                renderMonthlyIncidence();
+            }
+        }
+
+        async function loadDHIS2Data() {
+            try {
+                console.log('Loading data from DHIS2...');
+                
+                // Get current org unit
+                const orgUnitId = DHIS2_ORG_UNITS[currentSelection];
+                
+                // Get data elements for current data type
+                const dataElements = Object.values(DHIS2_DATA_ELEMENTS);
+                
+                // Fetch monthly data for current year
+                const response = await DHIS2API.getMonthlyData(
+                    dataElements,
+                    orgUnitId,
+                    currentTimePeriod
+                );
+                
+                if (!response) {
+                    console.error('No response from DHIS2');
+                    return false;
+                }
+                
+                // Parse and cache the data
+                dhis2Cache[currentSelection] = DHIS2API.parseAnalyticsData(response);
+                
+                console.log('DHIS2 data loaded successfully:', dhis2Cache);
+                return true;
+                
+            } catch (error) {
+                console.error('Error loading DHIS2 data:', error);
+                alert('Failed to connect to DHIS2. Please check:\n' +
+                      '1. DHIS2 URL is correct\n' +
+                      '2. Username/Password or API token is valid\n' +
+                      '3. CORS is enabled in DHIS2 for your domain\n' +
+                      '4. Network connection is working\n\n' +
+                      'See browser console for details.');
+                return false;
+            }
+        }
+
+        function getDHIS2Value(metric, orgUnit, period) {
+            // Get value from DHIS2 cache
+            const dataElementId = DHIS2_DATA_ELEMENTS[metric];
+            const orgUnitId = DHIS2_ORG_UNITS[orgUnit];
+            
+            if (!dhis2Cache[orgUnit] || !dhis2Cache[orgUnit][dataElementId]) {
+                return null;
+            }
+            
+            const periods = dhis2Cache[orgUnit][dataElementId];
+            
+            // If specific period requested, return that
+            if (period && periods[period]) {
+                return periods[period];
+            }
+            
+            // Otherwise return sum/average of all periods
+            const values = Object.values(periods);
+            return values.reduce((sum, val) => sum + val, 0);
+        }
+
+        function renderCards() {
+            const grid = document.getElementById('sidebarCardsGrid');
+            const cards = cardConfigs[currentDataType];
+            
+            grid.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'sidebar-card';
+                cardEl.setAttribute('data-metric', card.metric);
+                cardEl.onclick = () => filterByCard(card.metric);
+                
+                const colorStyle = card.color ? `style="color: ${card.color};"` : '';
+                const fontSize = card.isPercent ? 'style="font-size: 18px;"' : '';
+                
+                cardEl.innerHTML = `
+                    <div class="sidebar-label">${card.label}</div>
+                    <div class="sidebar-value" id="${card.id}" ${colorStyle} ${fontSize}>0</div>
+                    <div class="sidebar-subtitle">${card.subtitle}</div>
+                `;
+                
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function filterByCard(cardType) {
+            // Toggle card selection
+            const cards = document.querySelectorAll('.sidebar-card');
+            cards.forEach(card => {
+                if (card.dataset.metric === cardType) {
+                    if (card.classList.contains('active')) {
+                        card.classList.remove('active');
+                        activeCardFilter = null;
+                        document.getElementById('filterIndicator').classList.remove('active');
+                    } else {
+                        cards.forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        activeCardFilter = cardType;
+                        document.getElementById('filterIndicator').classList.add('active');
+                    }
+                }
+            });
+            
+            renderAllCharts();
+        }
+
+        function selectNational() {
+            currentSelection = 'national';
+            activeCardFilter = null;
+            
+            document.getElementById('headerDistrictSelect').value = '';
+            document.getElementById('headerChiefdomSelect').value = '';
+            document.getElementById('headerChiefdomSelect').disabled = true;
+            document.getElementById('headerChiefdomSelect').innerHTML = '<option value="">Select District First</option>';
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('filterIndicator').classList.remove('active');
+            
+            updateIndicators('national');
+            renderAllCharts();
+        }
+
+        function handleTimePeriodChange() {
+            currentTimePeriod = document.getElementById('timePeriodSelect').value;
+            updateIndicators(currentSelection);
+            renderAllCharts();
+            renderMonthlyIncidence();
+        }
+
+        function handleDataTypeChange() {
+            currentDataType = document.getElementById('dataTypeSelect').value;
+            activeCardFilter = null; // Reset card filter when changing data type
+            renderCards(); // Re-render cards for new data type
+            updateIndicators(currentSelection);
+            renderAllCharts();
+            renderMonthlyIncidence();
+        }
+
+        function handleHeaderDistrictChange() {
+            const district = document.getElementById('headerDistrictSelect').value;
+            
+            if (!district) {
+                selectNational();
+                return;
+            }
+            selectDistrict(district);
+        }
+
+        function selectDistrict(district) {
+            currentSelection = district;
+            activeCardFilter = null;
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            
+            const headerChiefdomSelect = document.getElementById('headerChiefdomSelect');
+            headerChiefdomSelect.disabled = false;
+            headerChiefdomSelect.value = '';
+            headerChiefdomSelect.innerHTML = '<option value="">All Chiefdoms</option>' + 
+                chiefdomsData[district].map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            updateIndicators(district);
+            renderAllCharts();
+        }
+
+        function handleHeaderChiefdomChange() {
+            const chiefdom = document.getElementById('headerChiefdomSelect').value;
+            
+            if (!chiefdom) {
+                const district = document.getElementById('headerDistrictSelect').value;
+                if (district) {
+                    selectDistrict(district);
+                }
+                return;
+            }
+            selectChiefdom(chiefdom);
+        }
+
+        function selectChiefdom(chiefdom) {
+            currentSelection = chiefdom;
+            activeCardFilter = null;
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            updateIndicators(chiefdom);
+            renderAllCharts();
+        }
+
+        function resetSelection() {
+            selectNational();
+        }
+
+        function renderMonthlyIncidence() {
+            const monthsData = [
+                { name: 'Jan', value: 165 },
+                { name: 'Feb', value: 278 },
+                { name: 'Mar', value: 342 },
+                { name: 'Apr', value: 498 },
+                { name: 'May', value: 385 },
+                { name: 'Jun', value: 405 },
+                { name: 'Jul', value: 520 },
+                { name: 'Aug', value: 295 },
+                { name: 'Sep', value: 272 },
+                { name: 'Oct', value: 388 },
+                { name: 'Nov', value: 468 },
+                { name: 'Dec', value: 382 }
+            ];
+
+            const monthsGrid = document.getElementById('monthsGrid');
+            monthsGrid.innerHTML = '';
+
+            monthsData.forEach(month => {
+                let colorClass = '';
+                if (month.value < 250) {
+                    colorClass = 'incidence-low';
+                } else if (month.value <= 450) {
+                    colorClass = 'incidence-moderate';
+                } else {
+                    colorClass = 'incidence-high';
+                }
+
+                const monthBox = document.createElement('div');
+                monthBox.className = `month-box ${colorClass}`;
+                monthBox.innerHTML = `
+                    <div class="month-name">${month.name}</div>
+                    <div class="month-value">${month.value}</div>
+                `;
+                monthsGrid.appendChild(monthBox);
+            });
+        }
+
+        function updateIndicators(level) {
+            let data;
+            
+            // Try to get DHIS2 data first if enabled
+            if (useDHIS2Data && dhis2Cache[level]) {
+                console.log('Using DHIS2 data for', level);
+                data = {};
+                
+                // Get values for each metric from DHIS2
+                const cards = cardConfigs[currentDataType];
+                cards.forEach(card => {
+                    const dhis2Value = getDHIS2Value(card.metric, level);
+                    if (dhis2Value !== null) {
+                        data[card.metric] = dhis2Value;
+                    }
+                });
+                
+                // Calculate derived metrics
+                if (data.confirmed && data.tests) {
+                    data.positivity = ((data.confirmed / data.tests) * 100).toFixed(1);
+                }
+                if (data.confirmed && data.treated) {
+                    data.treatment = ((data.treated / data.confirmed) * 100).toFixed(0);
+                }
+                if (data.suspected && data.tests) {
+                    data.testing = ((data.tests / data.suspected) * 100).toFixed(0);
+                }
+                if (data.deaths && data.confirmed) {
+                    data.fatality = ((data.deaths / data.confirmed) * 100).toFixed(2);
+                }
+            } else {
+                // Use sample data
+                console.log('Using sample data for', level);
+                const dataTypeData = dataVariations[currentDataType];
+                const yearData = dataTypeData ? dataTypeData[currentTimePeriod] : null;
+                
+                if (yearData && yearData[level]) {
+                    data = yearData[level];
+                } else if (yearData && yearData['national']) {
+                    // Fallback to national data with some variation
+                    const baseData = yearData['national'];
+                    const multiplier = 0.4 + Math.random() * 0.4;
+                    data = {
+                        opd: Math.floor(baseData.opd * multiplier),
+                        suspected: Math.floor(baseData.suspected * multiplier),
+                        tests: Math.floor(baseData.tests * multiplier),
+                        confirmed: Math.floor(baseData.confirmed * multiplier),
+                        treated: Math.floor(baseData.treated * multiplier),
+                        admissions: Math.floor(baseData.admissions * multiplier),
+                        deaths: Math.floor(baseData.deaths * multiplier),
+                        incidence: Math.floor(baseData.incidence * multiplier),
+                        presumed: Math.floor(baseData.presumed * multiplier),
+                        positivity: (baseData.positivity + (Math.random() * 4 - 2)).toFixed(1),
+                        reporting: Math.min(99, Math.floor(baseData.reporting + (Math.random() * 6 - 3))),
+                        testing: Math.min(99, Math.floor(baseData.testing + (Math.random() * 4 - 2))),
+                        treatment: Math.min(99, Math.floor(baseData.treatment + (Math.random() * 3 - 1))),
+                        fatality: ((Math.floor(baseData.deaths * multiplier) / Math.floor(baseData.confirmed * multiplier)) * 100).toFixed(2)
+                    };
+                    
+                    // Add intervention-specific metrics if applicable
+                    if (baseData.iptp !== undefined) {
+                        data.iptp = Math.min(99, Math.floor(baseData.iptp + (Math.random() * 6 - 3)));
+                        data.ipti = Math.min(99, Math.floor(baseData.ipti + (Math.random() * 6 - 3)));
+                        data.anc = Math.min(99, Math.floor(baseData.anc + (Math.random() * 4 - 2)));
+                        data.anc4 = Math.min(99, Math.floor(baseData.anc4 + (Math.random() * 6 - 3)));
+                        data.penta3 = Math.min(99, Math.floor(baseData.penta3 + (Math.random() * 4 - 2)));
+                        data.vaccine = Math.min(99, Math.floor(baseData.vaccine + (Math.random() * 6 - 3)));
+                        data.llin = Math.min(99, Math.floor(baseData.llin + (Math.random() * 6 - 3)));
+                        data.llinUsage = Math.min(99, Math.floor(baseData.llinUsage + (Math.random() * 6 - 3)));
+                        data.irs = Math.min(99, Math.floor(baseData.irs + (Math.random() * 6 - 3)));
+                        data.smc = Math.min(99, Math.floor(baseData.smc + (Math.random() * 6 - 3)));
+                        data.averted = Math.floor(baseData.averted * multiplier);
+                    }
+                    
+                    // Add stockout-specific metrics if applicable
+                    if (baseData.rdtStock !== undefined) {
+                        data.rdtStock = Math.floor(baseData.rdtStock + (Math.random() * 6 - 3));
+                        data.rdtStockout = Math.min(99, Math.floor(baseData.rdtStockout + (Math.random() * 8 - 4)));
+                        data.actStock = Math.floor(baseData.actStock + (Math.random() * 6 - 3));
+                        data.actStockout = Math.min(99, Math.floor(baseData.actStockout + (Math.random() * 8 - 4)));
+                        data.untreated = Math.floor(baseData.untreated * multiplier);
+                    }
+                } else {
+                    // Ultimate fallback
+                    data = {
+                        opd: 10000, suspected: 2500, tests: 2400, confirmed: 1600,
+                        treated: 1550, admissions: 250, deaths: 9, incidence: 120,
+                        presumed: 112, positivity: 66.7, reporting: 85, testing: 96,
+                        treatment: 97, fatality: 0.56
+                    };
+                }
+            }
+            
+            // Update all cards based on current config
+            const cards = cardConfigs[currentDataType];
+            cards.forEach(card => {
+                const element = document.getElementById(card.id);
+                if (element && data[card.metric] !== undefined) {
+                    const value = data[card.metric];
+                    if (card.isPercent) {
+                        element.textContent = value + '%';
+                    } else {
+                        element.textContent = typeof value === 'number' ? value.toLocaleString() : value;
+                    }
+                }
+            });
+        }
+
+        function renderAllCharts() {
+            // Get base variance based on selection and data type
+            let variance = 1;
+            const dataTypeData = dataVariations[currentDataType];
+            const yearData = dataTypeData ? dataTypeData[currentTimePeriod] : null;
+            
+            if (yearData && yearData[currentSelection]) {
+                const baseData = yearData['national'];
+                const selectionData = yearData[currentSelection];
+                variance = selectionData.suspected / baseData.suspected;
+            } else {
+                variance = currentSelection === 'national' ? 1 : (0.5 + Math.random() * 0.4);
+            }
+            
+            // Adjust variance based on time period
+            const yearMultiplier = {
+                '2024': 1.0,
+                '2023': 0.93,
+                '2022': 0.87
+            };
+            variance *= yearMultiplier[currentTimePeriod] || 1;
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            // Update chart title with selected year
+            document.getElementById('chartTitle').textContent = `Monthly Trends - All Indicators (January-December ${currentTimePeriod})`;
+            
+            // Combined rates chart with different base values per year and data type
+            const baseRatesData = {
+                'surveillance': {
+                    '2024': { reporting: 87, testing: 82, positivity: 65, treatment: 95 },
+                    '2023': { reporting: 85, testing: 80, positivity: 67, treatment: 94 },
+                    '2022': { reporting: 83, testing: 78, positivity: 68, treatment: 93 }
+                },
+                'intervention': {
+                    '2024': { reporting: 91, testing: 88, positivity: 62, treatment: 98 },
+                    '2023': { reporting: 89, testing: 86, positivity: 64, treatment: 97 },
+                    '2022': { reporting: 87, testing: 84, positivity: 65, treatment: 96 }
+                },
+                'stockout': {
+                    '2024': { reporting: 87, testing: 72, positivity: 68, treatment: 82 },
+                    '2023': { reporting: 85, testing: 70, positivity: 69, treatment: 81 },
+                    '2022': { reporting: 83, testing: 68, positivity: 70, treatment: 80 }
+                }
+            };
+            const rates = baseRatesData[currentDataType][currentTimePeriod];
+            
+            renderMultiLine('combinedRates', 
+                months,
+                [
+                    {
+                        label: 'Reporting Rate',
+                        data: [rates.reporting, rates.reporting+2, rates.reporting-2, rates.reporting+5, rates.reporting+1, rates.reporting+3, rates.reporting+4, rates.reporting+2, rates.reporting, rates.reporting+3, rates.reporting+1, rates.reporting+5].map(v => Math.min(99, Math.floor(v * variance))),
+                        color: '#2c6693'
+                    },
+                    {
+                        label: 'Testing Rate',
+                        data: [rates.testing, rates.testing+3, rates.testing-3, rates.testing+6, rates.testing+2, rates.testing+4, rates.testing+5, rates.testing+3, rates.testing+1, rates.testing+4, rates.testing+2, rates.testing+6].map(v => Math.min(99, Math.floor(v * variance))),
+                        color: '#4a90c4'
+                    },
+                    {
+                        label: 'Test Positivity Rate',
+                        data: [rates.positivity, rates.positivity+3, rates.positivity-3, rates.positivity+6, rates.positivity+4, rates.positivity+5, rates.positivity+7, rates.positivity+4, rates.positivity+2, rates.positivity+5, rates.positivity+3, rates.positivity+6].map(v => Math.min(99, Math.floor(v * variance))),
+                        color: '#d32f2f'
+                    },
+                    {
+                        label: 'Treatment Rate',
+                        data: [rates.treatment, rates.treatment+1, rates.treatment-1, rates.treatment+2, rates.treatment, rates.treatment+1, rates.treatment+2, rates.treatment+1, rates.treatment, rates.treatment+1, rates.treatment, rates.treatment+2].map(v => Math.min(99, Math.floor(v * variance))),
+                        color: '#2e7d32'
+                    }
+                ],
+                true,
+                'top'
+            );
+            
+            // Combined trends chart with different base values per year and data type
+            const baseCasesData = {
+                'surveillance': {
+                    '2024': { suspected: 1050, tests: 980, confirmed: 680, treated: 650, presumed: 70, notTreated: 30 },
+                    '2023': { suspected: 980, tests: 915, confirmed: 635, treated: 607, presumed: 65, notTreated: 28 },
+                    '2022': { suspected: 915, tests: 855, confirmed: 593, treated: 567, presumed: 61, notTreated: 26 }
+                },
+                'intervention': {
+                    '2024': { suspected: 830, tests: 815, confirmed: 565, treated: 555, presumed: 55, notTreated: 10 },
+                    '2023': { suspected: 775, tests: 760, confirmed: 527, treated: 518, presumed: 51, notTreated: 9 },
+                    '2022': { suspected: 723, tests: 710, confirmed: 492, treated: 484, presumed: 48, notTreated: 8 }
+                },
+                'stockout': {
+                    '2024': { suspected: 1050, tests: 830, confirmed: 578, treated: 495, presumed: 89, notTreated: 83 },
+                    '2023': { suspected: 980, tests: 775, confirmed: 540, treated: 462, presumed: 83, notTreated: 78 },
+                    '2022': { suspected: 915, tests: 724, confirmed: 504, treated: 432, presumed: 78, notTreated: 72 }
+                }
+            };
+            const cases = baseCasesData[currentDataType][currentTimePeriod];
+            
+            let datasets = [
+                {
+                    label: 'Suspected Cases',
+                    data: [cases.suspected, cases.suspected+150, cases.suspected-70, cases.suspected+300, cases.suspected+130, cases.suspected+240, cases.suspected+370, cases.suspected+200, cases.suspected+130, cases.suspected+270, cases.suspected+100, cases.suspected+230].map(v => Math.floor(v * variance)),
+                    color: '#fbbf24'
+                },
+                {
+                    label: 'Tests Performed',
+                    data: [cases.tests, cases.tests+170, cases.tests-60, cases.tests+300, cases.tests+120, cases.tests+230, cases.tests+370, cases.tests+200, cases.tests+140, cases.tests+280, cases.tests+110, cases.tests+240].map(v => Math.floor(v * variance)),
+                    color: '#2c6693'
+                },
+                {
+                    label: 'Confirmed Cases',
+                    data: [cases.confirmed, cases.confirmed+40, cases.confirmed-30, cases.confirmed+210, cases.confirmed+100, cases.confirmed+160, cases.confirmed+240, cases.confirmed+130, cases.confirmed+90, cases.confirmed+200, cases.confirmed+70, cases.confirmed+140].map(v => Math.floor(v * variance)),
+                    color: '#d32f2f'
+                },
+                {
+                    label: 'Treated Cases',
+                    data: [cases.treated, cases.treated+40, cases.treated-25, cases.treated+210, cases.treated+95, cases.treated+160, cases.treated+240, cases.treated+130, cases.treated+90, cases.treated+200, cases.treated+70, cases.treated+140].map(v => Math.floor(v * variance)),
+                    color: '#2e7d32'
+                },
+                {
+                    label: 'Presumed Cases',
+                    data: [cases.presumed, cases.presumed+10, cases.presumed-10, cases.presumed+20, cases.presumed+5, cases.presumed+10, cases.presumed+25, cases.presumed+15, cases.presumed, cases.presumed+10, cases.presumed-5, cases.presumed+5].map(v => Math.floor(v * variance)),
+                    color: '#9c27b0'
+                },
+                {
+                    label: 'Confirmed Not Treated',
+                    data: [cases.notTreated, cases.notTreated, cases.notTreated-5, cases.notTreated, cases.notTreated+5, cases.notTreated, cases.notTreated, cases.notTreated, cases.notTreated, cases.notTreated, cases.notTreated, cases.notTreated].map(v => Math.floor(v * variance)),
+                    color: '#ff5722'
+                }
+            ];
+            
+            // Filter datasets based on active card filter
+            if (activeCardFilter) {
+                const filterMap = {
+                    'suspected': 'Suspected Cases',
+                    'tests': 'Tests Performed',
+                    'confirmed': 'Confirmed Cases',
+                    'treated': 'Treated Cases',
+                    'presumed': 'Presumed Cases'
+                };
+                const targetLabel = filterMap[activeCardFilter];
+                if (targetLabel) {
+                    datasets = datasets.filter(ds => ds.label === targetLabel);
+                }
+            }
+            
+            renderMultiLine('trendCombined',
+                months,
+                datasets,
+                false,
+                'top'
+            );
+        }
+
+        function renderMultiLine(id, labels, datasets, isPercentage = false, legendPosition = 'top') {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            const chartDatasets = datasets.map(ds => ({
+                label: ds.label,
+                data: ds.data,
+                borderColor: ds.color,
+                backgroundColor: ds.color + '20',
+                tension: 0.4,
+                fill: false,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: chartDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            position: legendPosition,
+                            align: 'center',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 12,
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                },
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    return datasets.map((dataset, i) => ({
+                                        text: dataset.label,
+                                        fillStyle: dataset.borderColor,
+                                        strokeStyle: dataset.borderColor,
+                                        lineWidth: 2,
+                                        hidden: !chart.isDatasetVisible(i),
+                                        index: i,
+                                        pointStyle: 'circle'
+                                    }));
+                                }
+                            },
+                            onClick: function(e, legendItem, legend) {
+                                const index = legendItem.index;
+                                const chart = legend.chart;
+                                const clickedLabel = chart.data.datasets[index].label;
+                                
+                                // Toggle filter: if same label clicked, clear filter; otherwise set new filter
+                                if (legendFilter === clickedLabel) {
+                                    legendFilter = null;
+                                } else {
+                                    legendFilter = clickedLabel;
+                                }
+                                
+                                // Update all datasets visibility based on filter
+                                chart.data.datasets.forEach((dataset, i) => {
+                                    if (legendFilter === null) {
+                                        // No filter: show all
+                                        chart.setDatasetVisibility(i, true);
+                                    } else {
+                                        // Filter active: show only matching dataset
+                                        chart.setDatasetVisibility(i, dataset.label === legendFilter);
+                                    }
+                                });
+                                
+                                chart.update();
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: function(context) {
+                                    const suffix = isPercentage ? '%' : '';
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: isPercentage ? 100 : undefined,
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 8,
+                                callback: function(value) {
+                                    return isPercentage ? value + '%' : value.toLocaleString();
+                                }
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 5,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLine(id, label, labels, data, color) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 8
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 5,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initDashboard);
+    </script>
+</body>
+</html>
