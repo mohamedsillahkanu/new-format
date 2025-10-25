@@ -1,4 +1,4 @@
-<!DOCTYPE html>      
+<!DOCTYPE html>   
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -679,8 +679,275 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        // DASHBOARD CODE - CSV ONLY
-        // ============================================
+        // ============================================================================
+        // MALARIA DASHBOARD - CSV-BASED (NO CALCULATIONS)
+        // ============================================================================
+        // This dashboard reads ALL data from a CSV file - it does NOT calculate
+        // anything. All metrics (TPR, Incidence, Testing Rate, etc.) must be
+        // pre-calculated in your CSV file.
+        //
+        // QUICK MODIFICATION GUIDE:
+        // 
+        // 1. TO CHANGE CARD LABELS/METRICS:
+        //    - See "CARD CONFIGURATIONS FOR DIFFERENT DATA TYPES" section below
+        //    - Three data types: 'surveillance', 'intervention', 'stockout'
+        //    - Each has its own array of card objects
+        //
+        // 2. TO ADD NEW METRICS:
+        //    - Add to "DATA AGGREGATION OBJECT" section (around line 957)
+        //    - Add to "READING DATA FROM CSV" loop (around line 999)
+        //    - Add to card configs for the relevant data type
+        //
+        // 3. TO CHANGE CSV COLUMN NAMES:
+        //    - See "READING DATA FROM CSV" section for all CSV column references
+        //    - Update the row.ColumnName references to match your CSV
+        //
+        // 4. SPECIAL NOTES:
+        //    - 'incidence' metric changes meaning by data type:
+        //      * Surveillance: Shows "Crude Incidence" (per 1000)
+        //      * Routine Intervention: Shows "% of Routine LLINs"
+        //      * Stockout: Shows "Stockout Rate %"
+        //    - All displayed with appropriate labels in the card configs
+        // ============================================================================
+
+        // ============================================================================
+        // ⭐⭐⭐ USER MODIFICATION SECTION - CHARTS CONFIGURATION ⭐⭐⭐
+        // ============================================================================
+        // EASY CUSTOMIZATION: Each Data Type now has its own chart configuration!
+        // The charts will automatically change when you select a different Data Type
+        // 
+        // Simply modify the metrics for each data type below.
+        // 
+        // IMPORTANT: The 'dataKey' must match a property in monthlyData object
+        // Available dataKeys: suspected, tests, confirmed, treated, presumed,
+        //                     positivity, testing, treatment, reporting
+        // ============================================================================
+        
+        const USER_CHART_CONFIG = {
+            
+            // ========================================================================
+            // SURVEILLANCE DATA TYPE - Charts Configuration
+            // ========================================================================
+            surveillance: {
+                leftChart: {
+                    title: 'Key Performance Rates',
+                    metrics: [
+                        {
+                            label: 'Reporting Rate',
+                            dataKey: 'reporting',
+                            color: '#2c6693',
+                            csvColumn: 'Reporting_Rate'
+                        },
+                        {
+                            label: 'Testing Rate',
+                            dataKey: 'testing',
+                            color: '#4a90c4',
+                            csvColumn: 'Testing_Rate'
+                        },
+                        {
+                            label: 'Test Positivity Rate',
+                            dataKey: 'positivity',
+                            color: '#d32f2f',
+                            csvColumn: 'Test_Positivity_Rate'
+                        },
+                        {
+                            label: 'Treatment Rate',
+                            dataKey: 'treatment',
+                            color: '#2e7d32',
+                            csvColumn: 'Treatment_Rate'
+                        }
+                    ],
+                    showAsPercentage: true
+                },
+                
+                rightChart: {
+                    title: 'Monthly Trends - All Indicators',
+                    metrics: [
+                        {
+                            label: 'Suspected Cases',
+                            dataKey: 'suspected',
+                            color: '#fbbf24',
+                            csvColumn: 'Suspected_Cases'
+                        },
+                        {
+                            label: 'Tests Performed',
+                            dataKey: 'tests',
+                            color: '#2c6693',
+                            csvColumn: 'Tests_Performed'
+                        },
+                        {
+                            label: 'Confirmed Cases',
+                            dataKey: 'confirmed',
+                            color: '#d32f2f',
+                            csvColumn: 'Confirmed_Cases'
+                        },
+                        {
+                            label: 'Treated Cases',
+                            dataKey: 'treated',
+                            color: '#2e7d32',
+                            csvColumn: 'Treated_Cases'
+                        },
+                        {
+                            label: 'Presumed Cases',
+                            dataKey: 'presumed',
+                            color: '#9c27b0',
+                            csvColumn: 'Presumed_Cases'
+                        }
+                    ],
+                    showAsPercentage: false
+                }
+            },
+            
+            // ========================================================================
+            // INTERVENTION (ROUTINE) DATA TYPE - Charts Configuration
+            // ========================================================================
+            intervention: {
+                leftChart: {
+                    title: 'Intervention Coverage Rates',
+                    metrics: [
+                        {
+                            label: 'IPTp Coverage',
+                            dataKey: 'iptp',
+                            color: '#2c6693',
+                            csvColumn: 'IPTp_Coverage'
+                        },
+                        {
+                            label: 'LLIN Distribution',
+                            dataKey: 'llin',
+                            color: '#4a90c4',
+                            csvColumn: 'LLIN_Distribution'
+                        },
+                        {
+                            label: 'SMC Coverage',
+                            dataKey: 'smc',
+                            color: '#f57c00',
+                            csvColumn: 'SMC_Coverage'
+                        },
+                        {
+                            label: 'IRS Coverage',
+                            dataKey: 'irs',
+                            color: '#2e7d32',
+                            csvColumn: 'IRS_Coverage'
+                        }
+                    ],
+                    showAsPercentage: true
+                },
+                
+                rightChart: {
+                    title: 'Intervention Impact Trends',
+                    metrics: [
+                        {
+                            label: 'Cases Averted',
+                            dataKey: 'averted',
+                            color: '#4caf50',
+                            csvColumn: 'Cases_Averted'
+                        },
+                        {
+                            label: 'Confirmed Cases',
+                            dataKey: 'confirmed',
+                            color: '#d32f2f',
+                            csvColumn: 'Confirmed_Cases'
+                        },
+                        {
+                            label: 'Deaths',
+                            dataKey: 'deaths',
+                            color: '#7b1fa2',
+                            csvColumn: 'Deaths'
+                        }
+                    ],
+                    showAsPercentage: false
+                }
+            },
+            
+            // ========================================================================
+            // STOCKOUT DATA TYPE - Charts Configuration
+            // ========================================================================
+            stockout: {
+                leftChart: {
+                    title: 'Stockout Impact on Services',
+                    metrics: [
+                        {
+                            label: 'RDT Stockout Rate',
+                            dataKey: 'rdtStockout',
+                            color: '#d32f2f',
+                            csvColumn: 'RDT_Stockout_Percent'
+                        },
+                        {
+                            label: 'ACT Stockout Rate',
+                            dataKey: 'actStockout',
+                            color: '#f44336',
+                            csvColumn: 'ACT_Stockout_Percent'
+                        },
+                        {
+                            label: 'Testing Rate',
+                            dataKey: 'testing',
+                            color: '#2c6693',
+                            csvColumn: 'Testing_Rate'
+                        },
+                        {
+                            label: 'Treatment Rate',
+                            dataKey: 'treatment',
+                            color: '#2e7d32',
+                            csvColumn: 'Treatment_Rate'
+                        }
+                    ],
+                    showAsPercentage: true
+                },
+                
+                rightChart: {
+                    title: 'Stockout Effects on Case Management',
+                    metrics: [
+                        {
+                            label: 'Suspected Cases',
+                            dataKey: 'suspected',
+                            color: '#ff9800',
+                            csvColumn: 'Suspected_Cases'
+                        },
+                        {
+                            label: 'Tests Performed',
+                            dataKey: 'tests',
+                            color: '#2196f3',
+                            csvColumn: 'Tests_Performed'
+                        },
+                        {
+                            label: 'Confirmed Cases',
+                            dataKey: 'confirmed',
+                            color: '#d32f2f',
+                            csvColumn: 'Confirmed_Cases'
+                        },
+                        {
+                            label: 'Treated Cases',
+                            dataKey: 'treated',
+                            color: '#4caf50',
+                            csvColumn: 'Treated_Cases'
+                        },
+                        {
+                            label: 'Untreated Cases',
+                            dataKey: 'untreated',
+                            color: '#7b1fa2',
+                            csvColumn: 'Untreated_Cases'
+                        }
+                    ],
+                    showAsPercentage: false
+                }
+            }
+        };
+        
+        // ============================================================================
+        // EXAMPLE CUSTOMIZATIONS FOR EACH DATA TYPE:
+        // ============================================================================
+        // 
+        // To change Surveillance charts:
+        // → Edit USER_CHART_CONFIG.surveillance.leftChart or rightChart
+        //
+        // To change Intervention charts:
+        // → Edit USER_CHART_CONFIG.intervention.leftChart or rightChart
+        //
+        // To change Stockout charts:
+        // → Edit USER_CHART_CONFIG.stockout.leftChart or rightChart
+        //
+        // Each data type is completely independent!
+        // ============================================================================
         
         let charts = {};
         let currentSelection = 'national';
@@ -689,9 +956,28 @@
         let activeCardFilter = null;
         let currentDataType = 'surveillance';
 
-        // Card configurations for different data types
+        // ============================================================================
+        // CARD CONFIGURATIONS FOR DIFFERENT DATA TYPES
+        // ============================================================================
+        // Each data type section defines the indicators/cards shown in the left sidebar
+        // To modify: Change 'label' for display text, 'subtitle' for description, 
+        // 'metric' must match CSV column names, add 'isPercent: true' to show %
+        // ============================================================================
+        
         const cardConfigs = {
+            
+            // ========================================================================
+            // DATA TYPE: SURVEILLANCE
+            // ========================================================================
+            // Core malaria case surveillance metrics from health facilities
+            // CSV Columns Used: OPD_Visits, Suspected_Cases, Tests_Performed, 
+            //                   Confirmed_Cases, Treated_Cases, Admissions, Deaths,
+            //                   Test_Positivity_Rate, Reporting_Rate, Testing_Rate,
+            //                   Treatment_Rate, Incidence_Per_1000, Presumed_Cases,
+            //                   Case_Fatality_Rate
+            // ========================================================================
             'surveillance': [
+                // Basic Case Metrics
                 { id: 'sideIndOPD', label: 'Total OPD Visits', subtitle: 'All age groups', metric: 'opd' },
                 { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
                 { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Microscopy & RDT', metric: 'tests' },
@@ -699,47 +985,95 @@
                 { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'ACT treatment', metric: 'treated' },
                 { id: 'sideIndAdmissions', label: 'Admissions', subtitle: 'Malaria admissions', metric: 'admissions' },
                 { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                
+                // Quality & Performance Indicators (from CSV - not calculated)
                 { id: 'sideIndPositivity', label: 'Test Positivity', subtitle: 'Confirmed / Tested', metric: 'positivity', isPercent: true },
                 { id: 'sideIndReportingRate', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true },
                 { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Suspected tested', metric: 'testing', isPercent: true },
                 { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Confirmed treated', metric: 'treatment', isPercent: true },
+                
+                // Epidemiological Indicators
                 { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' },
                 { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
                 { id: 'sideIndCaseFatality', label: 'Case Fatality', subtitle: 'Deaths / Confirmed', metric: 'fatality', isPercent: true }
             ],
+            
+            // ========================================================================
+            // DATA TYPE: INTERVENTION (ROUTINE)
+            // ========================================================================
+            // Prevention and control intervention coverage metrics
+            // CSV Columns Used: IPTp_Coverage, IPTi_Coverage, ANC_1st_Visit,
+            //                   ANC_4plus_Visits, Penta3_Coverage, Malaria_Vaccine,
+            //                   LLIN_Distribution, LLIN_Usage, IRS_Coverage,
+            //                   SMC_Coverage, Cases_Averted, Deaths, Incidence_Per_1000,
+            //                   Reporting_Rate
+            // ========================================================================
             'intervention': [
+                // Preventive Chemotherapy Coverage
                 { id: 'sideIndIPTp', label: 'IPTp Coverage', subtitle: 'Pregnant women (3+ doses)', metric: 'iptp', isPercent: true },
                 { id: 'sideIndIPTi', label: 'IPTi Coverage', subtitle: 'Infants immunized', metric: 'ipti', isPercent: true },
+                
+                // Maternal & Child Health Platform
                 { id: 'sideIndANC', label: 'ANC Coverage', subtitle: '1st visit', metric: 'anc', isPercent: true },
                 { id: 'sideIndANC4', label: 'ANC4+ Coverage', subtitle: '4+ visits', metric: 'anc4', isPercent: true },
                 { id: 'sideIndPenta3', label: 'Penta3 Coverage', subtitle: 'Children immunized', metric: 'penta3', isPercent: true },
                 { id: 'sideIndMalariaVaccine', label: 'Malaria Vaccine', subtitle: 'Children vaccinated', metric: 'vaccine', isPercent: true },
+                
+                // Vector Control Interventions
                 { id: 'sideIndLLIN', label: 'LLIN Distribution', subtitle: 'Households covered', metric: 'llin', isPercent: true },
                 { id: 'sideIndLLINUsage', label: 'LLIN Usage', subtitle: 'Population using nets', metric: 'llinUsage', isPercent: true },
                 { id: 'sideIndIRS', label: 'IRS Coverage', subtitle: 'Households sprayed', metric: 'irs', isPercent: true },
                 { id: 'sideIndSMC', label: 'SMC Coverage', subtitle: 'Seasonal chemoprevention', metric: 'smc', isPercent: true },
+                
+                // Impact Metrics
                 { id: 'sideIndCasesAverted', label: 'Cases Averted', subtitle: 'Due to interventions', metric: 'averted' },
                 { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                
+                // Special Metric: For Routine interventions, this shows % of Routine LLINs (not incidence)
                 { id: 'sideIndIncidence', label: '% of Routine LLINs', subtitle: 'LLIN distribution', metric: 'incidence', isPercent: true },
+                
                 { id: 'sideIndReporting', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true }
             ],
+            
+            // ========================================================================
+            // DATA TYPE: STOCKOUT
+            // ========================================================================
+            // Commodity availability and stockout impact metrics
+            // CSV Columns Used: RDT_Stock_Days, RDT_Stockout_Percent, ACT_Stock_Days,
+            //                   ACT_Stockout_Percent, Suspected_Cases, Tests_Performed,
+            //                   Confirmed_Cases, Treated_Cases, Presumed_Cases,
+            //                   Untreated_Cases, Deaths, Testing_Rate, Treatment_Rate,
+            //                   Incidence_Per_1000
+            // ========================================================================
             'stockout': [
+                // Stock Availability Metrics
                 { id: 'sideIndRDTStock', label: 'RDT Stock Level', subtitle: 'Days of stock', metric: 'rdtStock' },
                 { id: 'sideIndRDTStockout', label: 'RDT Stockout', subtitle: 'Facilities affected', metric: 'rdtStockout', isPercent: true, color: '#d32f2f' },
                 { id: 'sideIndACTStock', label: 'ACT Stock Level', subtitle: 'Days of stock', metric: 'actStock' },
                 { id: 'sideIndACTStockout', label: 'ACT Stockout', subtitle: 'Facilities affected', metric: 'actStockout', isPercent: true, color: '#d32f2f' },
+                
+                // Case Management (Limited by Stockouts)
                 { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
                 { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Limited by RDT', metric: 'tests' },
                 { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
                 { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'Limited by ACT', metric: 'treated' },
                 { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                
+                // Stockout Impact
                 { id: 'sideIndUntreated', label: 'Untreated Cases', subtitle: 'Due to stockout', metric: 'untreated', color: '#d32f2f' },
                 { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                
+                // Service Delivery Rates (Affected by Supply)
                 { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Limited by supply', metric: 'testing', isPercent: true },
                 { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Limited by supply', metric: 'treatment', isPercent: true },
+                
+                // Special Metric: For Stockout, this shows Stockout Rate (not incidence)
                 { id: 'sideIndIncidence', label: 'Stockout Rate', subtitle: 'Facilities affected', metric: 'incidence', isPercent: true }
             ]
         };
+        // ============================================================================
+        // END OF CARD CONFIGURATIONS
+        // ============================================================================
 
         // Data variations for different districts and time periods
         // Data will be loaded from CSV file
@@ -886,42 +1220,54 @@
                 return null;
             }
             
-            // Aggregate the data
+            // ========================================================================
+            // DATA AGGREGATION OBJECT
+            // ========================================================================
+            // This object accumulates values from CSV rows that match the filters
+            // All values are READ from CSV - NO CALCULATIONS are performed here
+            // To add a new metric: Add it here, then read it from CSV in the loop below
+            // ========================================================================
             const aggregated = {
-                opd: 0,
-                suspected: 0,
-                tests: 0,
-                confirmed: 0,
-                treated: 0,
-                admissions: 0,
-                deaths: 0,
-                presumed: 0,
-                population: 0,
-                reporting: 0,
-                // Calculated fields from CSV
-                positivity: 0,
-                testing: 0,
-                treatment: 0,
-                fatality: 0,
-                incidence: 0,
-                // Intervention metrics
-                iptp: 0,
-                ipti: 0,
-                anc: 0,
-                anc4: 0,
-                penta3: 0,
-                vaccine: 0,
-                llin: 0,
-                llinUsage: 0,
-                irs: 0,
-                smc: 0,
-                averted: 0,
-                // Stockout metrics
-                rdtStock: 0,
-                actStock: 0,
-                rdtStockout: 0,
-                actStockout: 0,
-                untreated: 0
+                // BASIC CASE COUNTS (sum across all matching rows)
+                opd: 0,              // CSV: OPD_Visits
+                suspected: 0,        // CSV: Suspected_Cases
+                tests: 0,            // CSV: Tests_Performed
+                confirmed: 0,        // CSV: Confirmed_Cases
+                treated: 0,          // CSV: Treated_Cases
+                admissions: 0,       // CSV: Admissions
+                deaths: 0,           // CSV: Deaths
+                presumed: 0,         // CSV: Presumed_Cases
+                population: 0,       // CSV: Population (takes max value)
+                reporting: 0,        // CSV: Reporting_Rate (average)
+                
+                // CALCULATED METRICS (read from CSV - already calculated)
+                positivity: 0,       // CSV: Test_Positivity_Rate (average)
+                testing: 0,          // CSV: Testing_Rate (average)
+                treatment: 0,        // CSV: Treatment_Rate (average)
+                fatality: 0,         // CSV: Case_Fatality_Rate (average)
+                incidence: 0,        // CSV: Incidence_Per_1000 (average)
+                                     // NOTE: For Stockout = Stockout Rate %
+                                     // NOTE: For Routine = % of Routine LLINs
+                
+                // INTERVENTION METRICS (average percentages)
+                iptp: 0,             // CSV: IPTp_Coverage
+                ipti: 0,             // CSV: IPTi_Coverage
+                anc: 0,              // CSV: ANC_1st_Visit
+                anc4: 0,             // CSV: ANC_4plus_Visits
+                penta3: 0,           // CSV: Penta3_Coverage
+                vaccine: 0,          // CSV: Malaria_Vaccine
+                llin: 0,             // CSV: LLIN_Distribution
+                llinUsage: 0,        // CSV: LLIN_Usage
+                irs: 0,              // CSV: IRS_Coverage
+                smc: 0,              // CSV: SMC_Coverage
+                averted: 0,          // CSV: Cases_Averted (sum)
+                
+                // STOCKOUT METRICS
+                rdtStock: 0,         // CSV: RDT_Stock_Days (average)
+                actStock: 0,         // CSV: ACT_Stock_Days (average)
+                rdtStockout: 0,      // CSV: RDT_Stockout_Percent (average)
+                actStockout: 0,      // CSV: ACT_Stockout_Percent (average)
+                untreated: 0         // CSV: Untreated_Cases (sum)
             };
             
             let reportingCount = 0;
@@ -929,7 +1275,14 @@
             let stockoutCount = 0;
             let calculatedCount = 0;
             
+            // ========================================================================
+            // READING DATA FROM CSV
+            // ========================================================================
+            // Loop through all filtered CSV rows and accumulate values
+            // NO CALCULATIONS - just reading and summing values from CSV columns
+            // ========================================================================
             filteredData.forEach(row => {
+                // BASIC CASE COUNTS - Sum all values
                 aggregated.opd += row.OPD_Visits || 0;
                 aggregated.suspected += row.Suspected_Cases || 0;
                 aggregated.tests += row.Tests_Performed || 0;
@@ -939,13 +1292,18 @@
                 aggregated.deaths += row.Deaths || 0;
                 aggregated.presumed += row.Presumed_Cases || 0;
                 
+                // POPULATION - Take the maximum value
                 if (row.Population) aggregated.population = Math.max(aggregated.population, row.Population);
+                
+                // REPORTING RATE - Will be averaged later
                 if (row.Reporting_Rate) {
                     aggregated.reporting += parseFloat(row.Reporting_Rate) || 0;
                     reportingCount++;
                 }
                 
-                // Read calculated fields directly from CSV
+                // ====================================================================
+                // CALCULATED METRICS - Read directly from CSV (already calculated)
+                // ====================================================================
                 if (row.Test_Positivity_Rate !== undefined && row.Test_Positivity_Rate !== null && row.Test_Positivity_Rate !== '') {
                     aggregated.positivity += parseFloat(row.Test_Positivity_Rate) || 0;
                     calculatedCount++;
@@ -953,10 +1311,19 @@
                 if (row.Testing_Rate) aggregated.testing += parseFloat(row.Testing_Rate) || 0;
                 if (row.Treatment_Rate) aggregated.treatment += parseFloat(row.Treatment_Rate) || 0;
                 if (row.Case_Fatality_Rate) aggregated.fatality += parseFloat(row.Case_Fatality_Rate) || 0;
+                
+                // INCIDENCE - This value means different things for different data types:
+                // - Surveillance: Incidence per 1000 population
+                // - Routine Intervention: % of Routine LLINs
+                // - Stockout: Stockout Rate %
                 if (row.Incidence_Per_1000) aggregated.incidence += parseFloat(row.Incidence_Per_1000) || 0;
+                
+                // UNTREATED CASES - Sum (due to stockouts)
                 if (row.Untreated_Cases) aggregated.untreated += parseFloat(row.Untreated_Cases) || 0;
                 
-                // Intervention metrics (average percentages)
+                // ====================================================================
+                // INTERVENTION METRICS - Will be averaged later
+                // ====================================================================
                 if (row.IPTp_Coverage) {
                     aggregated.iptp += parseFloat(row.IPTp_Coverage) || 0;
                     interventionCount++;
@@ -972,7 +1339,9 @@
                 if (row.SMC_Coverage) aggregated.smc += parseFloat(row.SMC_Coverage) || 0;
                 if (row.Cases_Averted) aggregated.averted += row.Cases_Averted || 0;
                 
-                // Stockout metrics
+                // ====================================================================
+                // STOCKOUT METRICS - Will be averaged later
+                // ====================================================================
                 if (row.RDT_Stock_Days) {
                     aggregated.rdtStock += parseFloat(row.RDT_Stock_Days) || 0;
                     stockoutCount++;
@@ -982,8 +1351,16 @@
                 if (row.ACT_Stockout_Percent) aggregated.actStockout += parseFloat(row.ACT_Stockout_Percent) || 0;
             });
             
-            // Calculate averages for percentage fields
+            // ========================================================================
+            // CALCULATING AVERAGES FOR PERCENTAGE/RATE METRICS
+            // ========================================================================
+            // Some metrics are percentages that need to be averaged across rows
+            // ========================================================================
+            
+            // Reporting Rate
             if (reportingCount > 0) aggregated.reporting = (aggregated.reporting / reportingCount).toFixed(0);
+            
+            // Intervention Coverage Metrics
             if (interventionCount > 0) {
                 aggregated.iptp = (aggregated.iptp / interventionCount).toFixed(0);
                 aggregated.ipti = (aggregated.ipti / interventionCount).toFixed(0);
@@ -996,6 +1373,8 @@
                 aggregated.irs = (aggregated.irs / interventionCount).toFixed(0);
                 aggregated.smc = (aggregated.smc / interventionCount).toFixed(0);
             }
+            
+            // Stockout Metrics
             if (stockoutCount > 0) {
                 aggregated.rdtStock = Math.round(aggregated.rdtStock / stockoutCount);
                 aggregated.actStock = Math.round(aggregated.actStock / stockoutCount);
@@ -1042,52 +1421,140 @@
             }
             
             const monthlyData = {
+                // Case counts
                 suspected: [],
                 tests: [],
                 confirmed: [],
                 treated: [],
                 presumed: [],
+                deaths: [],
+                
+                // Quality metrics
                 positivity: [],
                 testing: [],
                 treatment: [],
-                reporting: []
+                reporting: [],
+                
+                // Intervention metrics
+                iptp: [],
+                ipti: [],
+                anc: [],
+                anc4: [],
+                penta3: [],
+                vaccine: [],
+                llin: [],
+                llinUsage: [],
+                irs: [],
+                smc: [],
+                averted: [],
+                
+                // Stockout metrics
+                rdtStock: [],
+                actStock: [],
+                rdtStockout: [],
+                actStockout: [],
+                untreated: []
             };
             
             monthOrder.forEach(month => {
                 const monthData = filteredData.filter(row => row.Month === month);
                 
                 if (monthData.length > 0) {
+                    // Case counts
                     const suspected = monthData.reduce((sum, row) => sum + (row.Suspected_Cases || 0), 0);
                     const tests = monthData.reduce((sum, row) => sum + (row.Tests_Performed || 0), 0);
                     const confirmed = monthData.reduce((sum, row) => sum + (row.Confirmed_Cases || 0), 0);
                     const treated = monthData.reduce((sum, row) => sum + (row.Treated_Cases || 0), 0);
                     const presumed = monthData.reduce((sum, row) => sum + (row.Presumed_Cases || 0), 0);
-                    const reportingSum = monthData.reduce((sum, row) => sum + (row.Reporting_Rate || 0), 0);
+                    const deaths = monthData.reduce((sum, row) => sum + (row.Deaths || 0), 0);
                     
-                    // Read calculated values from CSV instead of calculating
+                    // Quality metrics (averaged)
+                    const reportingSum = monthData.reduce((sum, row) => sum + (row.Reporting_Rate || 0), 0);
                     const positivitySum = monthData.reduce((sum, row) => sum + (parseFloat(row.Test_Positivity_Rate) || 0), 0);
                     const testingSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Testing_Rate) || 0), 0);
                     const treatmentSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Treatment_Rate) || 0), 0);
                     
+                    // Intervention metrics (averaged)
+                    const iptpSum = monthData.reduce((sum, row) => sum + (parseFloat(row.IPTp_Coverage) || 0), 0);
+                    const iptiSum = monthData.reduce((sum, row) => sum + (parseFloat(row.IPTi_Coverage) || 0), 0);
+                    const ancSum = monthData.reduce((sum, row) => sum + (parseFloat(row.ANC_1st_Visit) || 0), 0);
+                    const anc4Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.ANC_4plus_Visits) || 0), 0);
+                    const penta3Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Penta3_Coverage) || 0), 0);
+                    const vaccineSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Malaria_Vaccine) || 0), 0);
+                    const llinSum = monthData.reduce((sum, row) => sum + (parseFloat(row.LLIN_Distribution) || 0), 0);
+                    const llinUsageSum = monthData.reduce((sum, row) => sum + (parseFloat(row.LLIN_Usage) || 0), 0);
+                    const irsSum = monthData.reduce((sum, row) => sum + (parseFloat(row.IRS_Coverage) || 0), 0);
+                    const smcSum = monthData.reduce((sum, row) => sum + (parseFloat(row.SMC_Coverage) || 0), 0);
+                    const averted = monthData.reduce((sum, row) => sum + (row.Cases_Averted || 0), 0);
+                    
+                    // Stockout metrics
+                    const rdtStockSum = monthData.reduce((sum, row) => sum + (parseFloat(row.RDT_Stock_Days) || 0), 0);
+                    const actStockSum = monthData.reduce((sum, row) => sum + (parseFloat(row.ACT_Stock_Days) || 0), 0);
+                    const rdtStockoutSum = monthData.reduce((sum, row) => sum + (parseFloat(row.RDT_Stockout_Percent) || 0), 0);
+                    const actStockoutSum = monthData.reduce((sum, row) => sum + (parseFloat(row.ACT_Stockout_Percent) || 0), 0);
+                    const untreated = monthData.reduce((sum, row) => sum + (row.Untreated_Cases || 0), 0);
+                    
+                    // Push case counts
                     monthlyData.suspected.push(suspected);
                     monthlyData.tests.push(tests);
                     monthlyData.confirmed.push(confirmed);
                     monthlyData.treated.push(treated);
                     monthlyData.presumed.push(presumed);
+                    monthlyData.deaths.push(deaths);
+                    
+                    // Push quality metrics (averaged)
                     monthlyData.positivity.push(monthData.length > 0 ? parseFloat((positivitySum / monthData.length).toFixed(1)) : 0);
                     monthlyData.testing.push(monthData.length > 0 ? parseFloat((testingSum / monthData.length).toFixed(1)) : 0);
                     monthlyData.treatment.push(monthData.length > 0 ? parseFloat((treatmentSum / monthData.length).toFixed(1)) : 0);
                     monthlyData.reporting.push(monthData.length > 0 ? parseFloat((reportingSum / monthData.length).toFixed(1)) : 0);
+                    
+                    // Push intervention metrics (averaged)
+                    monthlyData.iptp.push(monthData.length > 0 ? parseFloat((iptpSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.ipti.push(monthData.length > 0 ? parseFloat((iptiSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.anc.push(monthData.length > 0 ? parseFloat((ancSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.anc4.push(monthData.length > 0 ? parseFloat((anc4Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.penta3.push(monthData.length > 0 ? parseFloat((penta3Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.vaccine.push(monthData.length > 0 ? parseFloat((vaccineSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.llin.push(monthData.length > 0 ? parseFloat((llinSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.llinUsage.push(monthData.length > 0 ? parseFloat((llinUsageSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.irs.push(monthData.length > 0 ? parseFloat((irsSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.smc.push(monthData.length > 0 ? parseFloat((smcSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.averted.push(averted);
+                    
+                    // Push stockout metrics
+                    monthlyData.rdtStock.push(monthData.length > 0 ? Math.round(rdtStockSum / monthData.length) : 0);
+                    monthlyData.actStock.push(monthData.length > 0 ? Math.round(actStockSum / monthData.length) : 0);
+                    monthlyData.rdtStockout.push(monthData.length > 0 ? parseFloat((rdtStockoutSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.actStockout.push(monthData.length > 0 ? parseFloat((actStockoutSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.untreated.push(untreated);
                 } else {
+                    // Push zeros for all metrics
                     monthlyData.suspected.push(0);
                     monthlyData.tests.push(0);
                     monthlyData.confirmed.push(0);
                     monthlyData.treated.push(0);
                     monthlyData.presumed.push(0);
+                    monthlyData.deaths.push(0);
                     monthlyData.positivity.push(0);
                     monthlyData.testing.push(0);
                     monthlyData.treatment.push(0);
                     monthlyData.reporting.push(0);
+                    monthlyData.iptp.push(0);
+                    monthlyData.ipti.push(0);
+                    monthlyData.anc.push(0);
+                    monthlyData.anc4.push(0);
+                    monthlyData.penta3.push(0);
+                    monthlyData.vaccine.push(0);
+                    monthlyData.llin.push(0);
+                    monthlyData.llinUsage.push(0);
+                    monthlyData.irs.push(0);
+                    monthlyData.smc.push(0);
+                    monthlyData.averted.push(0);
+                    monthlyData.rdtStock.push(0);
+                    monthlyData.actStock.push(0);
+                    monthlyData.rdtStockout.push(0);
+                    monthlyData.actStockout.push(0);
+                    monthlyData.untreated.push(0);
                 }
             });
             
@@ -1323,8 +1790,12 @@
         function renderAllCharts() {
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             
-            // Update chart title
-            document.getElementById('chartTitle').textContent = `Monthly Trends - All Indicators (January-December ${currentTimePeriod})`;
+            // Get configuration for current data type
+            const chartConfig = USER_CHART_CONFIG[currentDataType];
+            
+            // Update chart title using config
+            document.getElementById('chartTitle').textContent = 
+                `${chartConfig.rightChart.title} (January-December ${currentTimePeriod})`;
             
             // Get monthly data from CSV
             const monthlyData = getMonthlyCSVData(currentSelection, currentDataType);
@@ -1334,83 +1805,49 @@
                 return;
             }
             
-            // Render combined rates chart
+            // ====================================================================
+            // LEFT CHART: Build datasets from current data type's leftChart config
+            // ====================================================================
+            const leftChartDatasets = chartConfig.leftChart.metrics.map(metric => ({
+                label: metric.label,
+                data: monthlyData[metric.dataKey],
+                color: metric.color
+            }));
+            
             renderMultiLine('combinedRates', 
                 months,
-                [
-                    {
-                        label: 'Reporting Rate',
-                        data: monthlyData.reporting,
-                        color: '#2c6693'
-                    },
-                    {
-                        label: 'Testing Rate',
-                        data: monthlyData.testing,
-                        color: '#4a90c4'
-                    },
-                    {
-                        label: 'Test Positivity Rate',
-                        data: monthlyData.positivity,
-                        color: '#d32f2f'
-                    },
-                    {
-                        label: 'Treatment Rate',
-                        data: monthlyData.treatment,
-                        color: '#2e7d32'
-                    }
-                ],
-                true,
+                leftChartDatasets,
+                chartConfig.leftChart.showAsPercentage,
                 'top'
             );
             
-            // Combined trends chart
-            let datasets = [
-                {
-                    label: 'Suspected Cases',
-                    data: monthlyData.suspected,
-                    color: '#fbbf24'
-                },
-                {
-                    label: 'Tests Performed',
-                    data: monthlyData.tests,
-                    color: '#2c6693'
-                },
-                {
-                    label: 'Confirmed Cases',
-                    data: monthlyData.confirmed,
-                    color: '#d32f2f'
-                },
-                {
-                    label: 'Treated Cases',
-                    data: monthlyData.treated,
-                    color: '#2e7d32'
-                },
-                {
-                    label: 'Presumed Cases',
-                    data: monthlyData.presumed,
-                    color: '#9c27b0'
-                }
-            ];
+            // ====================================================================
+            // RIGHT CHART: Build datasets from current data type's rightChart config
+            // ====================================================================
+            let rightChartDatasets = chartConfig.rightChart.metrics.map(metric => ({
+                label: metric.label,
+                data: monthlyData[metric.dataKey],
+                color: metric.color
+            }));
             
-            // Filter datasets based on active card filter
+            // Filter datasets based on active card filter (if any)
             if (activeCardFilter) {
-                const filterMap = {
-                    'suspected': 'Suspected Cases',
-                    'tests': 'Tests Performed',
-                    'confirmed': 'Confirmed Cases',
-                    'treated': 'Treated Cases',
-                    'presumed': 'Presumed Cases'
-                };
+                // Build filter map dynamically from config
+                const filterMap = {};
+                chartConfig.rightChart.metrics.forEach(metric => {
+                    filterMap[metric.dataKey] = metric.label;
+                });
+                
                 const targetLabel = filterMap[activeCardFilter];
                 if (targetLabel) {
-                    datasets = datasets.filter(ds => ds.label === targetLabel);
+                    rightChartDatasets = rightChartDatasets.filter(ds => ds.label === targetLabel);
                 }
             }
             
             renderMultiLine('trendCombined',
                 months,
-                datasets,
-                false,
+                rightChartDatasets,
+                chartConfig.rightChart.showAsPercentage,
                 'top'
             );
         }
@@ -1615,6 +2052,62 @@
         }
 
         window.addEventListener('load', initDashboard);
+        
+        // ============================================================================
+        // CSV COLUMN REFERENCE GUIDE
+        // ============================================================================
+        // This dashboard expects the following columns in your CSV file:
+        //
+        // REQUIRED COLUMNS FOR ALL DATA TYPES:
+        // - DataType: 'surveillance', 'intervention', or 'stockout'
+        // - Year: e.g., 2024
+        // - Month: e.g., 'January', 'February', etc.
+        // - District: District name
+        // - Chiefdom: Chiefdom name
+        //
+        // CASE COUNTS (used by all data types):
+        // - OPD_Visits
+        // - Suspected_Cases
+        // - Tests_Performed
+        // - Confirmed_Cases
+        // - Treated_Cases
+        // - Admissions
+        // - Deaths
+        // - Presumed_Cases
+        // - Population
+        //
+        // PRE-CALCULATED METRICS (must be calculated in CSV):
+        // - Test_Positivity_Rate (%)
+        // - Testing_Rate (%)
+        // - Treatment_Rate (%)
+        // - Case_Fatality_Rate (%)
+        // - Incidence_Per_1000 (or Stockout Rate %, or % Routine LLINs)
+        // - Reporting_Rate (%)
+        //
+        // INTERVENTION COLUMNS (for DataType = 'intervention'):
+        // - IPTp_Coverage (%)
+        // - IPTi_Coverage (%)
+        // - ANC_1st_Visit (%)
+        // - ANC_4plus_Visits (%)
+        // - Penta3_Coverage (%)
+        // - Malaria_Vaccine (%)
+        // - LLIN_Distribution (%)
+        // - LLIN_Usage (%)
+        // - IRS_Coverage (%)
+        // - SMC_Coverage (%)
+        // - Cases_Averted (count)
+        //
+        // STOCKOUT COLUMNS (for DataType = 'stockout'):
+        // - RDT_Stock_Days (days)
+        // - ACT_Stock_Days (days)
+        // - RDT_Stockout_Percent (%)
+        // - ACT_Stockout_Percent (%)
+        // - Untreated_Cases (count)
+        //
+        // REMEMBER: All percentages and rates must be PRE-CALCULATED in your CSV!
+        // This dashboard does NOT perform any calculations - it only reads and
+        // displays the values you provide.
+        // ============================================================================
     </script>
 </body>
 </html>
