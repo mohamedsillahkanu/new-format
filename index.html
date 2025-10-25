@@ -604,7 +604,7 @@
                 <div class="header-filter-group">
                     <label class="header-filter-label">Data Type</label>
                     <select class="header-select" id="dataTypeSelect" onchange="handleDataTypeChange()">
-                        <option value="surveillance">Surveillance</option>
+                        <option value="surveillance" selected>Surveillance</option>
                         <option value="intervention">Routine Intervention</option>
                         <option value="stockout">Stockout</option>
                     </select>
@@ -613,7 +613,7 @@
                 <div class="header-filter-group">
                     <label class="header-filter-label">Time Period</label>
                     <select class="header-select" id="timePeriodSelect" onchange="handleTimePeriodChange()">
-                        <option value="2024">January 2024 - December 2024</option>
+                        <option value="2024" selected>January 2024 - December 2024</option>
                         <option value="2023">January 2023 - December 2023</option>
                         <option value="2022">January 2022 - December 2022</option>
                     </select>
@@ -622,12 +622,7 @@
                 <div class="header-filter-group">
                     <label class="header-filter-label">District</label>
                     <select class="header-select" id="headerDistrictSelect" onchange="handleHeaderDistrictChange()">
-                        <option value="">All Districts</option>
-                        <option value="Bo">Bo</option>
-                        <option value="Kenema">Kenema</option>
-                        <option value="Kono">Kono</option>
-                        <option value="Western Area">Western Area</option>
-                        <option value="Port Loko">Port Loko</option>
+                        <option value="" selected>All Districts (National)</option>
                     </select>
                 </div>
                 
@@ -844,6 +839,11 @@
                 option.textContent = district;
                 districtSelect.appendChild(option);
             });
+            
+            // Ensure first option displays properly
+            if (districtSelect.options.length > 0) {
+                districtSelect.options[0].textContent = 'All Districts (National)';
+            }
         }
         
         // Get data from CSV for specific level and data type
@@ -1306,20 +1306,17 @@
             // Update all cards with the data
             const cards = cardConfigs[currentDataType];
             cards.forEach(card => {
-                const element = document.getElementById(card.id);
-                if (element) {
-                    const valueElement = element.querySelector('.sidebar-value');
-                    if (valueElement) {
-                        const value = data[card.metric];
-                        if (value !== undefined && value !== null) {
-                            if (card.isPercent) {
-                                valueElement.textContent = value + '%';
-                            } else {
-                                valueElement.textContent = typeof value === 'number' ? Math.round(value).toLocaleString() : value;
-                            }
+                const valueElement = document.getElementById(card.id);
+                if (valueElement) {
+                    const value = data[card.metric];
+                    if (value !== undefined && value !== null) {
+                        if (card.isPercent) {
+                            valueElement.textContent = value + '%';
                         } else {
-                            valueElement.textContent = '-';
+                            valueElement.textContent = typeof value === 'number' ? Math.round(value).toLocaleString() : value;
                         }
+                    } else {
+                        valueElement.textContent = '-';
                     }
                 }
             });
