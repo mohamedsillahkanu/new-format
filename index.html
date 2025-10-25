@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>   
 <html lang="en">
 <head>
@@ -671,7 +672,7 @@
         </div>
 
         <div class="monthly-incidence-grid">
-            <div class="monthly-incidence-title">Monthly Incidence Rate</div>
+            <div class="monthly-incidence-title" id="monthlyIncidenceTitle">Monthly Incidence Rate</div>
             <div class="months-grid" id="monthsGrid"></div>
         </div>
     </div>
@@ -803,56 +804,74 @@
             // ========================================================================
             intervention: {
                 leftChart: {
-                    title: 'Intervention Coverage Rates',
+                    title: 'EPI & ANC Platform - ITN Distribution',
                     metrics: [
                         {
-                            label: 'IPTp Coverage',
-                            dataKey: 'iptp',
+                            label: 'Pentavalent 1st Dose',
+                            dataKey: 'penta1',
                             color: '#2c6693',
-                            csvColumn: 'IPTp_Coverage'
+                            csvColumn: 'Pentavalent_1st_dose'
                         },
                         {
-                            label: 'LLIN Distribution',
-                            dataKey: 'llin',
+                            label: 'Pentavalent 3rd Dose',
+                            dataKey: 'penta3',
                             color: '#4a90c4',
-                            csvColumn: 'LLIN_Distribution'
+                            csvColumn: 'Pentavalent_3rd_dose'
                         },
                         {
-                            label: 'SMC Coverage',
-                            dataKey: 'smc',
+                            label: 'LLITN at Penta3',
+                            dataKey: 'llinPenta3',
                             color: '#f57c00',
-                            csvColumn: 'SMC_Coverage'
+                            csvColumn: 'LLITN_given_at_Pentavalent_3rd_dose'
                         },
                         {
-                            label: 'IRS Coverage',
-                            dataKey: 'irs',
+                            label: 'LLITN at ANC',
+                            dataKey: 'llinAnc',
                             color: '#2e7d32',
-                            csvColumn: 'IRS_Coverage'
+                            csvColumn: 'Antenatal_client_given_LLITN'
                         }
                     ],
-                    showAsPercentage: true
+                    showAsPercentage: false
                 },
                 
                 rightChart: {
-                    title: 'Intervention Impact Trends',
+                    title: 'Malaria Vaccine & IPT Coverage',
                     metrics: [
                         {
-                            label: 'Cases Averted',
-                            dataKey: 'averted',
-                            color: '#4caf50',
-                            csvColumn: 'Cases_Averted'
+                            label: 'Malaria Vaccine 1st',
+                            dataKey: 'vaccine1',
+                            color: '#1976d2',
+                            csvColumn: 'Malaria_Vaccine_1st_dose'
                         },
                         {
-                            label: 'Confirmed Cases',
-                            dataKey: 'confirmed',
+                            label: 'Malaria Vaccine 2nd',
+                            dataKey: 'vaccine2',
+                            color: '#42a5f5',
+                            csvColumn: 'Malaria_Vaccine_2nd_dose'
+                        },
+                        {
+                            label: 'Malaria Vaccine 3rd',
+                            dataKey: 'vaccine3',
+                            color: '#90caf9',
+                            csvColumn: 'Malaria_Vaccine_3rd_dose'
+                        },
+                        {
+                            label: 'IPTp 1st Dose',
+                            dataKey: 'iptp1',
                             color: '#d32f2f',
-                            csvColumn: 'Confirmed_Cases'
+                            csvColumn: 'Antenatal_client_IPT_1st_dose'
                         },
                         {
-                            label: 'Deaths',
-                            dataKey: 'deaths',
-                            color: '#7b1fa2',
-                            csvColumn: 'Deaths'
+                            label: 'IPTp 2nd Dose',
+                            dataKey: 'iptp2',
+                            color: '#f44336',
+                            csvColumn: 'Antenatal_client_IPT_2nd_dose'
+                        },
+                        {
+                            label: 'IPTp 3rd Dose',
+                            dataKey: 'iptp3',
+                            color: '#e57373',
+                            csvColumn: 'Antenatal_client_IPT_3rd_dose'
                         }
                     ],
                     showAsPercentage: false
@@ -864,71 +883,71 @@
             // ========================================================================
             stockout: {
                 leftChart: {
-                    title: 'Stockout Impact on Services',
+                    title: 'ACT Formulations Stockout Rates',
                     metrics: [
                         {
-                            label: 'RDT Stockout Rate',
-                            dataKey: 'rdtStockout',
+                            label: 'ACT 6 Tabs',
+                            dataKey: 'act6',
                             color: '#d32f2f',
-                            csvColumn: 'RDT_Stockout_Percent'
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout'
                         },
                         {
-                            label: 'ACT Stockout Rate',
-                            dataKey: 'actStockout',
+                            label: 'ACT 12 Tabs',
+                            dataKey: 'act12',
                             color: '#f44336',
-                            csvColumn: 'ACT_Stockout_Percent'
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout'
                         },
                         {
-                            label: 'Testing Rate',
-                            dataKey: 'testing',
-                            color: '#2c6693',
-                            csvColumn: 'Testing_Rate'
+                            label: 'ACT 18 Tabs',
+                            dataKey: 'act18',
+                            color: '#e57373',
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout'
                         },
                         {
-                            label: 'Treatment Rate',
-                            dataKey: 'treatment',
-                            color: '#2e7d32',
-                            csvColumn: 'Treatment_Rate'
+                            label: 'ACT 24 Tabs',
+                            dataKey: 'act24',
+                            color: '#ef5350',
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout'
                         }
                     ],
                     showAsPercentage: true
                 },
                 
                 rightChart: {
-                    title: 'Stockout Effects on Case Management',
+                    title: 'Injectable Antimalarials & RDT Stockout',
                     metrics: [
                         {
-                            label: 'Suspected Cases',
-                            dataKey: 'suspected',
-                            color: '#ff9800',
-                            csvColumn: 'Suspected_Cases'
-                        },
-                        {
-                            label: 'Tests Performed',
-                            dataKey: 'tests',
+                            label: 'Malaria RDT Kit',
+                            dataKey: 'rdtKit',
                             color: '#2196f3',
-                            csvColumn: 'Tests_Performed'
+                            csvColumn: 'Malaria_Rapid_Diagnostic_Test_Kit_Stockout'
                         },
                         {
-                            label: 'Confirmed Cases',
-                            dataKey: 'confirmed',
+                            label: 'Artemether 20mg Inj',
+                            dataKey: 'artemether20',
                             color: '#d32f2f',
-                            csvColumn: 'Confirmed_Cases'
+                            csvColumn: 'Artemether_20mg_ml_Inj_Stockout'
                         },
                         {
-                            label: 'Treated Cases',
-                            dataKey: 'treated',
-                            color: '#4caf50',
-                            csvColumn: 'Treated_Cases'
+                            label: 'Artesunate 60mg Inj',
+                            dataKey: 'artesunate60',
+                            color: '#f44336',
+                            csvColumn: 'Artesunate_60mg_ml_Inj_Vial_Stockout'
                         },
                         {
-                            label: 'Untreated Cases',
-                            dataKey: 'untreated',
-                            color: '#7b1fa2',
-                            csvColumn: 'Untreated_Cases'
+                            label: 'Artesunate 20mg Inj',
+                            dataKey: 'artesunate20',
+                            color: '#e57373',
+                            csvColumn: 'Artesunate_20mg_ml_Inj_Stockout'
+                        },
+                        {
+                            label: 'Artesunate 50mg Supp',
+                            dataKey: 'artesunate50',
+                            color: '#ff9800',
+                            csvColumn: 'Artesunate_50mg_Suppository_Stockout'
                         }
                     ],
-                    showAsPercentage: false
+                    showAsPercentage: true
                 }
             }
         };
@@ -1001,74 +1020,69 @@
             // ========================================================================
             // DATA TYPE: INTERVENTION (ROUTINE)
             // ========================================================================
-            // Prevention and control intervention coverage metrics
-            // CSV Columns Used: IPTp_Coverage, IPTi_Coverage, ANC_1st_Visit,
-            //                   ANC_4plus_Visits, Penta3_Coverage, Malaria_Vaccine,
-            //                   LLIN_Distribution, LLIN_Usage, IRS_Coverage,
-            //                   SMC_Coverage, Cases_Averted, Deaths, Incidence_Per_1000,
-            //                   Reporting_Rate
+            // Prevention and control intervention coverage metrics from EPI and ANC
+            // New variables: Pentavalent doses, Malaria vaccine doses, IPTi doses,
+            //                ANC visits, IPTp doses, LLITN distribution, Vitamin A
             // ========================================================================
             'intervention': [
-                // Preventive Chemotherapy Coverage
-                { id: 'sideIndIPTp', label: 'IPTp Coverage', subtitle: 'Pregnant women (3+ doses)', metric: 'iptp', isPercent: true },
-                { id: 'sideIndIPTi', label: 'IPTi Coverage', subtitle: 'Infants immunized', metric: 'ipti', isPercent: true },
+                // EPI - Pentavalent & LLITN
+                { id: 'sideIndPenta1', label: 'Pentavalent 1st Dose', subtitle: 'Immunization', metric: 'penta1' },
+                { id: 'sideIndPenta3', label: 'Pentavalent 3rd Dose', subtitle: 'Immunization', metric: 'penta3' },
+                { id: 'sideIndLLINPenta3', label: 'LLITN at Penta3', subtitle: 'ITN distribution', metric: 'llinPenta3' },
                 
-                // Maternal & Child Health Platform
-                { id: 'sideIndANC', label: 'ANC Coverage', subtitle: '1st visit', metric: 'anc', isPercent: true },
-                { id: 'sideIndANC4', label: 'ANC4+ Coverage', subtitle: '4+ visits', metric: 'anc4', isPercent: true },
-                { id: 'sideIndPenta3', label: 'Penta3 Coverage', subtitle: 'Children immunized', metric: 'penta3', isPercent: true },
-                { id: 'sideIndMalariaVaccine', label: 'Malaria Vaccine', subtitle: 'Children vaccinated', metric: 'vaccine', isPercent: true },
+                // Malaria Vaccine Doses
+                { id: 'sideIndVaccine1', label: 'Malaria Vaccine 1st', subtitle: 'Dose 1', metric: 'vaccine1' },
+                { id: 'sideIndVaccine2', label: 'Malaria Vaccine 2nd', subtitle: 'Dose 2', metric: 'vaccine2' },
+                { id: 'sideIndVaccine3', label: 'Malaria Vaccine 3rd', subtitle: 'Dose 3', metric: 'vaccine3' },
+                { id: 'sideIndVaccine4', label: 'Malaria Vaccine 4th', subtitle: 'Dose 4', metric: 'vaccine4' },
                 
-                // Vector Control Interventions
-                { id: 'sideIndLLIN', label: 'LLIN Distribution', subtitle: 'Households covered', metric: 'llin', isPercent: true },
-                { id: 'sideIndLLINUsage', label: 'LLIN Usage', subtitle: 'Population using nets', metric: 'llinUsage', isPercent: true },
-                { id: 'sideIndIRS', label: 'IRS Coverage', subtitle: 'Households sprayed', metric: 'irs', isPercent: true },
-                { id: 'sideIndSMC', label: 'SMC Coverage', subtitle: 'Seasonal chemoprevention', metric: 'smc', isPercent: true },
+                // IPTi - Infant Prophylaxis
+                { id: 'sideIndIPTi1', label: 'IPTi 1st Dose', subtitle: 'Infant prophylaxis', metric: 'ipti1' },
+                { id: 'sideIndIPTi2', label: 'IPTi 2nd Dose', subtitle: 'Infant prophylaxis', metric: 'ipti2' },
+                { id: 'sideIndIPTi3', label: 'IPTi 3rd Dose', subtitle: 'Infant prophylaxis', metric: 'ipti3' },
                 
-                // Impact Metrics
-                { id: 'sideIndCasesAverted', label: 'Cases Averted', subtitle: 'Due to interventions', metric: 'averted' },
-                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                // ANC Visits
+                { id: 'sideIndANC1', label: 'ANC 1st Visit', subtitle: 'Antenatal care', metric: 'anc1' },
+                { id: 'sideIndANC4', label: 'ANC 4th Visit', subtitle: 'Antenatal care', metric: 'anc4' },
+                { id: 'sideIndANC8', label: 'ANC 8th Visit', subtitle: 'Antenatal care', metric: 'anc8' },
                 
-                // Special Metric: For Routine interventions, this shows % of Routine LLINs (not incidence)
-                { id: 'sideIndIncidence', label: '% of Routine LLINs', subtitle: 'LLIN distribution', metric: 'incidence', isPercent: true },
+                // IPTp - Pregnancy Prophylaxis
+                { id: 'sideIndIPTp1', label: 'IPTp 1st Dose', subtitle: 'Pregnancy prophylaxis', metric: 'iptp1' },
+                { id: 'sideIndIPTp2', label: 'IPTp 2nd Dose', subtitle: 'Pregnancy prophylaxis', metric: 'iptp2' },
+                { id: 'sideIndIPTp3', label: 'IPTp 3rd Dose', subtitle: 'Pregnancy prophylaxis', metric: 'iptp3' },
                 
-                { id: 'sideIndReporting', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true }
+                // LLITN at ANC
+                { id: 'sideIndLLINANC', label: 'LLITN at ANC', subtitle: 'ITN distribution', metric: 'llinAnc' },
+                
+                // Vitamin A Supplementation
+                { id: 'sideIndVitA6', label: 'Vitamin A 6-11m', subtitle: 'Supplement', metric: 'vitA6' },
+                { id: 'sideIndVitA12', label: 'Vitamin A 12-59m', subtitle: 'Supplement', metric: 'vitA12' }
             ],
             
             // ========================================================================
             // DATA TYPE: STOCKOUT
             // ========================================================================
-            // Commodity availability and stockout impact metrics
-            // CSV Columns Used: RDT_Stock_Days, RDT_Stockout_Percent, ACT_Stock_Days,
-            //                   ACT_Stockout_Percent, Suspected_Cases, Tests_Performed,
-            //                   Confirmed_Cases, Treated_Cases, Presumed_Cases,
-            //                   Untreated_Cases, Deaths, Testing_Rate, Treatment_Rate,
-            //                   Incidence_Per_1000
+            // Commodity stockout tracking for essential malaria medicines and diagnostics
+            // 10 commodities: Injectable antimalarials, suppositories, RDTs, SP, ACTs
             // ========================================================================
             'stockout': [
-                // Stock Availability Metrics
-                { id: 'sideIndRDTStock', label: 'RDT Stock Level', subtitle: 'Days of stock', metric: 'rdtStock' },
-                { id: 'sideIndRDTStockout', label: 'RDT Stockout', subtitle: 'Facilities affected', metric: 'rdtStockout', isPercent: true, color: '#d32f2f' },
-                { id: 'sideIndACTStock', label: 'ACT Stock Level', subtitle: 'Days of stock', metric: 'actStock' },
-                { id: 'sideIndACTStockout', label: 'ACT Stockout', subtitle: 'Facilities affected', metric: 'actStockout', isPercent: true, color: '#d32f2f' },
+                // Injectable Antimalarials
+                { id: 'sideIndArtemether20', label: 'Artemether 20mg/ml Inj', subtitle: 'Stockout %', metric: 'artemether20', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndArtesunate50', label: 'Artesunate 50mg Supp', subtitle: 'Stockout %', metric: 'artesunate50', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndArtesunate60', label: 'Artesunate 60mg/ml Inj', subtitle: 'Stockout %', metric: 'artesunate60', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndArtesunate20', label: 'Artesunate 20mg/ml Inj', subtitle: 'Stockout %', metric: 'artesunate20', isPercent: true, color: '#d32f2f' },
                 
-                // Case Management (Limited by Stockouts)
-                { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
-                { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Limited by RDT', metric: 'tests' },
-                { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
-                { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'Limited by ACT', metric: 'treated' },
-                { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                // Diagnostics
+                { id: 'sideIndRDT', label: 'Malaria RDT Kit', subtitle: 'Stockout %', metric: 'rdtKit', isPercent: true, color: '#d32f2f' },
                 
-                // Stockout Impact
-                { id: 'sideIndUntreated', label: 'Untreated Cases', subtitle: 'Due to stockout', metric: 'untreated', color: '#d32f2f' },
-                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                // Antimalarial Tablets
+                { id: 'sideIndSP', label: 'SP 500mg/25mg Tab', subtitle: 'Stockout %', metric: 'sp', isPercent: true, color: '#d32f2f' },
                 
-                // Service Delivery Rates (Affected by Supply)
-                { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Limited by supply', metric: 'testing', isPercent: true },
-                { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Limited by supply', metric: 'treatment', isPercent: true },
-                
-                // Special Metric: For Stockout, this shows Stockout Rate (not incidence)
-                { id: 'sideIndIncidence', label: 'Stockout Rate', subtitle: 'Facilities affected', metric: 'incidence', isPercent: true }
+                // ACT - Different Pack Sizes
+                { id: 'sideIndACT6', label: 'ACT 20mg/120mg - 6 Tabs', subtitle: 'Stockout %', metric: 'act6', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACT12', label: 'ACT 20mg/120mg - 12 Tabs', subtitle: 'Stockout %', metric: 'act12', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACT18', label: 'ACT 20mg/120mg - 18 Tabs', subtitle: 'Stockout %', metric: 'act18', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACT24', label: 'ACT 20mg/120mg - 24 Tabs', subtitle: 'Stockout %', metric: 'act24', isPercent: true, color: '#d32f2f' }
             ]
         };
         // ============================================================================
@@ -1249,25 +1263,49 @@
                                      // NOTE: For Stockout = Stockout Rate %
                                      // NOTE: For Routine = % of Routine LLINs
                 
-                // INTERVENTION METRICS (average percentages)
-                iptp: 0,             // CSV: IPTp_Coverage
-                ipti: 0,             // CSV: IPTi_Coverage
-                anc: 0,              // CSV: ANC_1st_Visit
-                anc4: 0,             // CSV: ANC_4plus_Visits
-                penta3: 0,           // CSV: Penta3_Coverage
-                vaccine: 0,          // CSV: Malaria_Vaccine
-                llin: 0,             // CSV: LLIN_Distribution
-                llinUsage: 0,        // CSV: LLIN_Usage
-                irs: 0,              // CSV: IRS_Coverage
-                smc: 0,              // CSV: SMC_Coverage
-                averted: 0,          // CSV: Cases_Averted (sum)
+                // INTERVENTION METRICS (count/numbers - will be summed)
+                // EPI Metrics
+                penta1: 0,           // CSV: Pentavalent_1st_dose
+                penta3: 0,           // CSV: Pentavalent_3rd_dose
+                llinPenta3: 0,       // CSV: LLITN_given_at_Pentavalent_3rd_dose
                 
-                // STOCKOUT METRICS
-                rdtStock: 0,         // CSV: RDT_Stock_Days (average)
-                actStock: 0,         // CSV: ACT_Stock_Days (average)
-                rdtStockout: 0,      // CSV: RDT_Stockout_Percent (average)
-                actStockout: 0,      // CSV: ACT_Stockout_Percent (average)
-                untreated: 0         // CSV: Untreated_Cases (sum)
+                // Malaria Vaccine
+                vaccine1: 0,         // CSV: Malaria_Vaccine_1st_dose
+                vaccine2: 0,         // CSV: Malaria_Vaccine_2nd_dose
+                vaccine3: 0,         // CSV: Malaria_Vaccine_3rd_dose
+                vaccine4: 0,         // CSV: Malaria_Vaccine_4th_dose
+                
+                // IPTi
+                ipti1: 0,            // CSV: IPTi_1st_dose_given
+                ipti2: 0,            // CSV: IPTi_2nd_dose_given
+                ipti3: 0,            // CSV: IPTi_3rd_dose_given
+                
+                // ANC
+                anc1: 0,             // CSV: Antenatal_client_1st_visit
+                anc4: 0,             // CSV: Antenatal_client_4th_visit
+                anc8: 0,             // CSV: Antenatal_client_8th_visit
+                
+                // IPTp
+                iptp1: 0,            // CSV: Antenatal_client_IPT_1st_dose
+                iptp2: 0,            // CSV: Antenatal_client_IPT_2nd_dose
+                iptp3: 0,            // CSV: Antenatal_client_IPT_3rd_dose
+                
+                // LLITN & Vitamin A
+                llinAnc: 0,          // CSV: Antenatal_client_given_LLITN
+                vitA6: 0,            // CSV: Vitamin_A_supplement_6_11_months
+                vitA12: 0,           // CSV: Vitamin_A_supplement_12_59_months
+                
+                // STOCKOUT METRICS (percentage - will be averaged)
+                artemether20: 0,     // CSV: Artemether_20mg_ml_Inj_Stockout
+                artesunate50: 0,     // CSV: Artesunate_50mg_Suppository_Stockout
+                artesunate60: 0,     // CSV: Artesunate_60mg_ml_Inj_Vial_Stockout
+                artesunate20: 0,     // CSV: Artesunate_20mg_ml_Inj_Stockout
+                rdtKit: 0,           // CSV: Malaria_Rapid_Diagnostic_Test_Kit_Stockout
+                sp: 0,               // CSV: Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout
+                act6: 0,             // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout
+                act12: 0,            // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout
+                act18: 0,            // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout
+                act24: 0             // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout
             };
             
             let reportingCount = 0;
@@ -1322,64 +1360,82 @@
                 if (row.Untreated_Cases) aggregated.untreated += parseFloat(row.Untreated_Cases) || 0;
                 
                 // ====================================================================
-                // INTERVENTION METRICS - Will be averaged later
+                // INTERVENTION METRICS - Sum all values (these are counts)
                 // ====================================================================
-                if (row.IPTp_Coverage) {
-                    aggregated.iptp += parseFloat(row.IPTp_Coverage) || 0;
+                // EPI Metrics
+                if (row.Pentavalent_1st_dose) {
+                    aggregated.penta1 += row.Pentavalent_1st_dose || 0;
                     interventionCount++;
                 }
-                if (row.IPTi_Coverage) aggregated.ipti += parseFloat(row.IPTi_Coverage) || 0;
-                if (row.ANC_1st_Visit) aggregated.anc += parseFloat(row.ANC_1st_Visit) || 0;
-                if (row.ANC_4plus_Visits) aggregated.anc4 += parseFloat(row.ANC_4plus_Visits) || 0;
-                if (row.Penta3_Coverage) aggregated.penta3 += parseFloat(row.Penta3_Coverage) || 0;
-                if (row.Malaria_Vaccine) aggregated.vaccine += parseFloat(row.Malaria_Vaccine) || 0;
-                if (row.LLIN_Distribution) aggregated.llin += parseFloat(row.LLIN_Distribution) || 0;
-                if (row.LLIN_Usage) aggregated.llinUsage += parseFloat(row.LLIN_Usage) || 0;
-                if (row.IRS_Coverage) aggregated.irs += parseFloat(row.IRS_Coverage) || 0;
-                if (row.SMC_Coverage) aggregated.smc += parseFloat(row.SMC_Coverage) || 0;
-                if (row.Cases_Averted) aggregated.averted += row.Cases_Averted || 0;
+                if (row.Pentavalent_3rd_dose) aggregated.penta3 += row.Pentavalent_3rd_dose || 0;
+                if (row.LLITN_given_at_Pentavalent_3rd_dose) aggregated.llinPenta3 += row.LLITN_given_at_Pentavalent_3rd_dose || 0;
+                
+                // Malaria Vaccine
+                if (row.Malaria_Vaccine_1st_dose) aggregated.vaccine1 += row.Malaria_Vaccine_1st_dose || 0;
+                if (row.Malaria_Vaccine_2nd_dose) aggregated.vaccine2 += row.Malaria_Vaccine_2nd_dose || 0;
+                if (row.Malaria_Vaccine_3rd_dose) aggregated.vaccine3 += row.Malaria_Vaccine_3rd_dose || 0;
+                if (row.Malaria_Vaccine_4th_dose) aggregated.vaccine4 += row.Malaria_Vaccine_4th_dose || 0;
+                
+                // IPTi
+                if (row.IPTi_1st_dose_given) aggregated.ipti1 += row.IPTi_1st_dose_given || 0;
+                if (row.IPTi_2nd_dose_given) aggregated.ipti2 += row.IPTi_2nd_dose_given || 0;
+                if (row.IPTi_3rd_dose_given) aggregated.ipti3 += row.IPTi_3rd_dose_given || 0;
+                
+                // ANC
+                if (row.Antenatal_client_1st_visit) aggregated.anc1 += row.Antenatal_client_1st_visit || 0;
+                if (row.Antenatal_client_4th_visit) aggregated.anc4 += row.Antenatal_client_4th_visit || 0;
+                if (row.Antenatal_client_8th_visit) aggregated.anc8 += row.Antenatal_client_8th_visit || 0;
+                
+                // IPTp
+                if (row.Antenatal_client_IPT_1st_dose) aggregated.iptp1 += row.Antenatal_client_IPT_1st_dose || 0;
+                if (row.Antenatal_client_IPT_2nd_dose) aggregated.iptp2 += row.Antenatal_client_IPT_2nd_dose || 0;
+                if (row.Antenatal_client_IPT_3rd_dose) aggregated.iptp3 += row.Antenatal_client_IPT_3rd_dose || 0;
+                
+                // LLITN & Vitamin A
+                if (row.Antenatal_client_given_LLITN) aggregated.llinAnc += row.Antenatal_client_given_LLITN || 0;
+                if (row.Vitamin_A_supplement_6_11_months) aggregated.vitA6 += row.Vitamin_A_supplement_6_11_months || 0;
+                if (row.Vitamin_A_supplement_12_59_months) aggregated.vitA12 += row.Vitamin_A_supplement_12_59_months || 0;
                 
                 // ====================================================================
-                // STOCKOUT METRICS - Will be averaged later
+                // STOCKOUT METRICS - Will be averaged later (these are percentages)
                 // ====================================================================
-                if (row.RDT_Stock_Days) {
-                    aggregated.rdtStock += parseFloat(row.RDT_Stock_Days) || 0;
+                if (row.Artemether_20mg_ml_Inj_Stockout) {
+                    aggregated.artemether20 += parseFloat(row.Artemether_20mg_ml_Inj_Stockout) || 0;
                     stockoutCount++;
                 }
-                if (row.ACT_Stock_Days) aggregated.actStock += parseFloat(row.ACT_Stock_Days) || 0;
-                if (row.RDT_Stockout_Percent) aggregated.rdtStockout += parseFloat(row.RDT_Stockout_Percent) || 0;
-                if (row.ACT_Stockout_Percent) aggregated.actStockout += parseFloat(row.ACT_Stockout_Percent) || 0;
+                if (row.Artesunate_50mg_Suppository_Stockout) aggregated.artesunate50 += parseFloat(row.Artesunate_50mg_Suppository_Stockout) || 0;
+                if (row.Artesunate_60mg_ml_Inj_Vial_Stockout) aggregated.artesunate60 += parseFloat(row.Artesunate_60mg_ml_Inj_Vial_Stockout) || 0;
+                if (row.Artesunate_20mg_ml_Inj_Stockout) aggregated.artesunate20 += parseFloat(row.Artesunate_20mg_ml_Inj_Stockout) || 0;
+                if (row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) aggregated.rdtKit += parseFloat(row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) || 0;
+                if (row.Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout) aggregated.sp += parseFloat(row.Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) aggregated.act6 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout) aggregated.act12 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout) aggregated.act18 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout) aggregated.act24 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout) || 0;
             });
             
             // ========================================================================
             // CALCULATING AVERAGES FOR PERCENTAGE/RATE METRICS
             // ========================================================================
             // Some metrics are percentages that need to be averaged across rows
+            // NOTE: Intervention metrics are COUNTS, not percentages, so NOT averaged
             // ========================================================================
             
             // Reporting Rate
             if (reportingCount > 0) aggregated.reporting = (aggregated.reporting / reportingCount).toFixed(0);
             
-            // Intervention Coverage Metrics
-            if (interventionCount > 0) {
-                aggregated.iptp = (aggregated.iptp / interventionCount).toFixed(0);
-                aggregated.ipti = (aggregated.ipti / interventionCount).toFixed(0);
-                aggregated.anc = (aggregated.anc / interventionCount).toFixed(0);
-                aggregated.anc4 = (aggregated.anc4 / interventionCount).toFixed(0);
-                aggregated.penta3 = (aggregated.penta3 / interventionCount).toFixed(0);
-                aggregated.vaccine = (aggregated.vaccine / interventionCount).toFixed(0);
-                aggregated.llin = (aggregated.llin / interventionCount).toFixed(0);
-                aggregated.llinUsage = (aggregated.llinUsage / interventionCount).toFixed(0);
-                aggregated.irs = (aggregated.irs / interventionCount).toFixed(0);
-                aggregated.smc = (aggregated.smc / interventionCount).toFixed(0);
-            }
-            
-            // Stockout Metrics
+            // Stockout Metrics (these are percentages - average them)
             if (stockoutCount > 0) {
-                aggregated.rdtStock = Math.round(aggregated.rdtStock / stockoutCount);
-                aggregated.actStock = Math.round(aggregated.actStock / stockoutCount);
-                aggregated.rdtStockout = (aggregated.rdtStockout / stockoutCount).toFixed(0);
-                aggregated.actStockout = (aggregated.actStockout / stockoutCount).toFixed(0);
+                aggregated.artemether20 = (aggregated.artemether20 / stockoutCount).toFixed(1);
+                aggregated.artesunate50 = (aggregated.artesunate50 / stockoutCount).toFixed(1);
+                aggregated.artesunate60 = (aggregated.artesunate60 / stockoutCount).toFixed(1);
+                aggregated.artesunate20 = (aggregated.artesunate20 / stockoutCount).toFixed(1);
+                aggregated.rdtKit = (aggregated.rdtKit / stockoutCount).toFixed(1);
+                aggregated.sp = (aggregated.sp / stockoutCount).toFixed(1);
+                aggregated.act6 = (aggregated.act6 / stockoutCount).toFixed(1);
+                aggregated.act12 = (aggregated.act12 / stockoutCount).toFixed(1);
+                aggregated.act18 = (aggregated.act18 / stockoutCount).toFixed(1);
+                aggregated.act24 = (aggregated.act24 / stockoutCount).toFixed(1);
             }
             
             // Average the calculated metrics from CSV (don't recalculate!)
@@ -1435,25 +1491,38 @@
                 treatment: [],
                 reporting: [],
                 
-                // Intervention metrics
-                iptp: [],
-                ipti: [],
-                anc: [],
-                anc4: [],
+                // Intervention metrics (EPI & ANC counts)
+                penta1: [],
                 penta3: [],
-                vaccine: [],
-                llin: [],
-                llinUsage: [],
-                irs: [],
-                smc: [],
-                averted: [],
+                llinPenta3: [],
+                vaccine1: [],
+                vaccine2: [],
+                vaccine3: [],
+                vaccine4: [],
+                ipti1: [],
+                ipti2: [],
+                ipti3: [],
+                anc1: [],
+                anc4: [],
+                anc8: [],
+                iptp1: [],
+                iptp2: [],
+                iptp3: [],
+                llinAnc: [],
+                vitA6: [],
+                vitA12: [],
                 
-                // Stockout metrics
-                rdtStock: [],
-                actStock: [],
-                rdtStockout: [],
-                actStockout: [],
-                untreated: []
+                // Stockout metrics (percentages)
+                artemether20: [],
+                artesunate50: [],
+                artesunate60: [],
+                artesunate20: [],
+                rdtKit: [],
+                sp: [],
+                act6: [],
+                act12: [],
+                act18: [],
+                act24: []
             };
             
             monthOrder.forEach(month => {
@@ -1474,25 +1543,38 @@
                     const testingSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Testing_Rate) || 0), 0);
                     const treatmentSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Treatment_Rate) || 0), 0);
                     
-                    // Intervention metrics (averaged)
-                    const iptpSum = monthData.reduce((sum, row) => sum + (parseFloat(row.IPTp_Coverage) || 0), 0);
-                    const iptiSum = monthData.reduce((sum, row) => sum + (parseFloat(row.IPTi_Coverage) || 0), 0);
-                    const ancSum = monthData.reduce((sum, row) => sum + (parseFloat(row.ANC_1st_Visit) || 0), 0);
-                    const anc4Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.ANC_4plus_Visits) || 0), 0);
-                    const penta3Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Penta3_Coverage) || 0), 0);
-                    const vaccineSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Malaria_Vaccine) || 0), 0);
-                    const llinSum = monthData.reduce((sum, row) => sum + (parseFloat(row.LLIN_Distribution) || 0), 0);
-                    const llinUsageSum = monthData.reduce((sum, row) => sum + (parseFloat(row.LLIN_Usage) || 0), 0);
-                    const irsSum = monthData.reduce((sum, row) => sum + (parseFloat(row.IRS_Coverage) || 0), 0);
-                    const smcSum = monthData.reduce((sum, row) => sum + (parseFloat(row.SMC_Coverage) || 0), 0);
-                    const averted = monthData.reduce((sum, row) => sum + (row.Cases_Averted || 0), 0);
+                    // Intervention metrics (summed counts)
+                    const penta1 = monthData.reduce((sum, row) => sum + (row.Pentavalent_1st_dose || 0), 0);
+                    const penta3 = monthData.reduce((sum, row) => sum + (row.Pentavalent_3rd_dose || 0), 0);
+                    const llinPenta3 = monthData.reduce((sum, row) => sum + (row.LLITN_given_at_Pentavalent_3rd_dose || 0), 0);
+                    const vaccine1 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_1st_dose || 0), 0);
+                    const vaccine2 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_2nd_dose || 0), 0);
+                    const vaccine3 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_3rd_dose || 0), 0);
+                    const vaccine4 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_4th_dose || 0), 0);
+                    const ipti1 = monthData.reduce((sum, row) => sum + (row.IPTi_1st_dose_given || 0), 0);
+                    const ipti2 = monthData.reduce((sum, row) => sum + (row.IPTi_2nd_dose_given || 0), 0);
+                    const ipti3 = monthData.reduce((sum, row) => sum + (row.IPTi_3rd_dose_given || 0), 0);
+                    const anc1 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_1st_visit || 0), 0);
+                    const anc4 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_4th_visit || 0), 0);
+                    const anc8 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_8th_visit || 0), 0);
+                    const iptp1 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_IPT_1st_dose || 0), 0);
+                    const iptp2 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_IPT_2nd_dose || 0), 0);
+                    const iptp3 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_IPT_3rd_dose || 0), 0);
+                    const llinAnc = monthData.reduce((sum, row) => sum + (row.Antenatal_client_given_LLITN || 0), 0);
+                    const vitA6 = monthData.reduce((sum, row) => sum + (row.Vitamin_A_supplement_6_11_months || 0), 0);
+                    const vitA12 = monthData.reduce((sum, row) => sum + (row.Vitamin_A_supplement_12_59_months || 0), 0);
                     
-                    // Stockout metrics
-                    const rdtStockSum = monthData.reduce((sum, row) => sum + (parseFloat(row.RDT_Stock_Days) || 0), 0);
-                    const actStockSum = monthData.reduce((sum, row) => sum + (parseFloat(row.ACT_Stock_Days) || 0), 0);
-                    const rdtStockoutSum = monthData.reduce((sum, row) => sum + (parseFloat(row.RDT_Stockout_Percent) || 0), 0);
-                    const actStockoutSum = monthData.reduce((sum, row) => sum + (parseFloat(row.ACT_Stockout_Percent) || 0), 0);
-                    const untreated = monthData.reduce((sum, row) => sum + (row.Untreated_Cases || 0), 0);
+                    // Stockout metrics (averaged percentages)
+                    const artemether20Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_20mg_ml_Inj_Stockout) || 0), 0);
+                    const artesunate50Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artesunate_50mg_Suppository_Stockout) || 0), 0);
+                    const artesunate60Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artesunate_60mg_ml_Inj_Vial_Stockout) || 0), 0);
+                    const artesunate20Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artesunate_20mg_ml_Inj_Stockout) || 0), 0);
+                    const rdtKitSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) || 0), 0);
+                    const spSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout) || 0), 0);
+                    const act6Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) || 0), 0);
+                    const act12Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout) || 0), 0);
+                    const act18Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout) || 0), 0);
+                    const act24Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout) || 0), 0);
                     
                     // Push case counts
                     monthlyData.suspected.push(suspected);
@@ -1508,25 +1590,38 @@
                     monthlyData.treatment.push(monthData.length > 0 ? parseFloat((treatmentSum / monthData.length).toFixed(1)) : 0);
                     monthlyData.reporting.push(monthData.length > 0 ? parseFloat((reportingSum / monthData.length).toFixed(1)) : 0);
                     
-                    // Push intervention metrics (averaged)
-                    monthlyData.iptp.push(monthData.length > 0 ? parseFloat((iptpSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.ipti.push(monthData.length > 0 ? parseFloat((iptiSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.anc.push(monthData.length > 0 ? parseFloat((ancSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.anc4.push(monthData.length > 0 ? parseFloat((anc4Sum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.penta3.push(monthData.length > 0 ? parseFloat((penta3Sum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.vaccine.push(monthData.length > 0 ? parseFloat((vaccineSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.llin.push(monthData.length > 0 ? parseFloat((llinSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.llinUsage.push(monthData.length > 0 ? parseFloat((llinUsageSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.irs.push(monthData.length > 0 ? parseFloat((irsSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.smc.push(monthData.length > 0 ? parseFloat((smcSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.averted.push(averted);
+                    // Push intervention metrics (summed counts - not averaged)
+                    monthlyData.penta1.push(penta1);
+                    monthlyData.penta3.push(penta3);
+                    monthlyData.llinPenta3.push(llinPenta3);
+                    monthlyData.vaccine1.push(vaccine1);
+                    monthlyData.vaccine2.push(vaccine2);
+                    monthlyData.vaccine3.push(vaccine3);
+                    monthlyData.vaccine4.push(vaccine4);
+                    monthlyData.ipti1.push(ipti1);
+                    monthlyData.ipti2.push(ipti2);
+                    monthlyData.ipti3.push(ipti3);
+                    monthlyData.anc1.push(anc1);
+                    monthlyData.anc4.push(anc4);
+                    monthlyData.anc8.push(anc8);
+                    monthlyData.iptp1.push(iptp1);
+                    monthlyData.iptp2.push(iptp2);
+                    monthlyData.iptp3.push(iptp3);
+                    monthlyData.llinAnc.push(llinAnc);
+                    monthlyData.vitA6.push(vitA6);
+                    monthlyData.vitA12.push(vitA12);
                     
-                    // Push stockout metrics
-                    monthlyData.rdtStock.push(monthData.length > 0 ? Math.round(rdtStockSum / monthData.length) : 0);
-                    monthlyData.actStock.push(monthData.length > 0 ? Math.round(actStockSum / monthData.length) : 0);
-                    monthlyData.rdtStockout.push(monthData.length > 0 ? parseFloat((rdtStockoutSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.actStockout.push(monthData.length > 0 ? parseFloat((actStockoutSum / monthData.length).toFixed(1)) : 0);
-                    monthlyData.untreated.push(untreated);
+                    // Push stockout metrics (averaged percentages)
+                    monthlyData.artemether20.push(monthData.length > 0 ? parseFloat((artemether20Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.artesunate50.push(monthData.length > 0 ? parseFloat((artesunate50Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.artesunate60.push(monthData.length > 0 ? parseFloat((artesunate60Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.artesunate20.push(monthData.length > 0 ? parseFloat((artesunate20Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.rdtKit.push(monthData.length > 0 ? parseFloat((rdtKitSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.sp.push(monthData.length > 0 ? parseFloat((spSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act6.push(monthData.length > 0 ? parseFloat((act6Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act12.push(monthData.length > 0 ? parseFloat((act12Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act18.push(monthData.length > 0 ? parseFloat((act18Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act24.push(monthData.length > 0 ? parseFloat((act24Sum / monthData.length).toFixed(1)) : 0);
                 } else {
                     // Push zeros for all metrics
                     monthlyData.suspected.push(0);
@@ -1539,22 +1634,39 @@
                     monthlyData.testing.push(0);
                     monthlyData.treatment.push(0);
                     monthlyData.reporting.push(0);
-                    monthlyData.iptp.push(0);
-                    monthlyData.ipti.push(0);
-                    monthlyData.anc.push(0);
-                    monthlyData.anc4.push(0);
+                    
+                    // Intervention zeros
+                    monthlyData.penta1.push(0);
                     monthlyData.penta3.push(0);
-                    monthlyData.vaccine.push(0);
-                    monthlyData.llin.push(0);
-                    monthlyData.llinUsage.push(0);
-                    monthlyData.irs.push(0);
-                    monthlyData.smc.push(0);
-                    monthlyData.averted.push(0);
-                    monthlyData.rdtStock.push(0);
-                    monthlyData.actStock.push(0);
-                    monthlyData.rdtStockout.push(0);
-                    monthlyData.actStockout.push(0);
-                    monthlyData.untreated.push(0);
+                    monthlyData.llinPenta3.push(0);
+                    monthlyData.vaccine1.push(0);
+                    monthlyData.vaccine2.push(0);
+                    monthlyData.vaccine3.push(0);
+                    monthlyData.vaccine4.push(0);
+                    monthlyData.ipti1.push(0);
+                    monthlyData.ipti2.push(0);
+                    monthlyData.ipti3.push(0);
+                    monthlyData.anc1.push(0);
+                    monthlyData.anc4.push(0);
+                    monthlyData.anc8.push(0);
+                    monthlyData.iptp1.push(0);
+                    monthlyData.iptp2.push(0);
+                    monthlyData.iptp3.push(0);
+                    monthlyData.llinAnc.push(0);
+                    monthlyData.vitA6.push(0);
+                    monthlyData.vitA12.push(0);
+                    
+                    // Stockout zeros
+                    monthlyData.artemether20.push(0);
+                    monthlyData.artesunate50.push(0);
+                    monthlyData.artesunate60.push(0);
+                    monthlyData.artesunate20.push(0);
+                    monthlyData.rdtKit.push(0);
+                    monthlyData.sp.push(0);
+                    monthlyData.act6.push(0);
+                    monthlyData.act12.push(0);
+                    monthlyData.act18.push(0);
+                    monthlyData.act24.push(0);
                 }
             });
             
@@ -1701,12 +1813,31 @@
             const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
                               'July', 'August', 'September', 'October', 'November', 'December'];
             const monthsGrid = document.getElementById('monthsGrid');
+            const titleElement = document.getElementById('monthlyIncidenceTitle');
             monthsGrid.innerHTML = '';
 
             if (!rawCSVData || rawCSVData.length === 0) {
                 console.warn('No CSV data for monthly incidence');
                 return;
             }
+            
+            // Set title and metric based on data type
+            let title, metricColumn, isPercentage;
+            if (currentDataType === 'surveillance') {
+                title = 'Monthly Incidence Rate';
+                metricColumn = 'Incidence_Per_1000';
+                isPercentage = false;
+            } else if (currentDataType === 'intervention') {
+                title = 'Coverage of Routine ITN (EPI and ANC)';
+                metricColumn = 'LLITN_given_at_Pentavalent_3rd_dose'; // Using LLITN at Penta3 as primary
+                isPercentage = false;
+            } else if (currentDataType === 'stockout') {
+                title = 'Average Days of Stockout (RDT & ACT)';
+                metricColumn = 'Malaria_Rapid_Diagnostic_Test_Kit_Stockout'; // Using RDT stockout as primary
+                isPercentage = true;
+            }
+            
+            titleElement.textContent = title;
             
             // Filter data by current selection and data type
             let filteredData = rawCSVData.filter(row => 
@@ -1727,31 +1858,62 @@
             monthOrder.forEach((fullMonth, index) => {
                 const monthData = filteredData.filter(row => row.Month === fullMonth);
                 
-                // Get incidence directly from CSV
-                let incidence = 0;
+                // Calculate value based on data type
+                let value = 0;
                 if (monthData.length > 0) {
-                    const incidenceSum = monthData.reduce((sum, row) => 
-                        sum + (parseFloat(row.Incidence_Per_1000) || 0), 0
-                    );
-                    incidence = Math.round(incidenceSum / monthData.length);
+                    if (currentDataType === 'intervention') {
+                        // For intervention: sum LLITN at Penta3 and LLITN at ANC
+                        const llinPenta3 = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.LLITN_given_at_Pentavalent_3rd_dose) || 0), 0
+                        );
+                        const llinAnc = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Antenatal_client_given_LLITN) || 0), 0
+                        );
+                        value = Math.round(llinPenta3 + llinAnc);
+                    } else if (currentDataType === 'stockout') {
+                        // For stockout: average of RDT and ACT stockout percentages
+                        const rdtSum = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) || 0), 0
+                        );
+                        const actSum = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) || 0), 0
+                        );
+                        const avgStockout = (rdtSum + actSum) / (monthData.length * 2);
+                        // Convert percentage to approximate days (assuming 30 days per month)
+                        value = Math.round((avgStockout / 100) * 30);
+                    } else {
+                        // For surveillance: incidence per 1000
+                        const valueSum = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Incidence_Per_1000) || 0), 0
+                        );
+                        value = Math.round(valueSum / monthData.length);
+                    }
                 }
                 
+                // Set color class based on data type and value
                 let colorClass = '';
-                if (incidence < 250) {
-                    colorClass = 'incidence-low';
-                } else if (incidence <= 450) {
-                    colorClass = 'incidence-moderate';
-                } else if (incidence <= 650) {
-                    colorClass = 'incidence-high';
-                } else {
-                    colorClass = 'incidence-very-high';
+                if (currentDataType === 'surveillance') {
+                    if (value < 250) colorClass = 'incidence-low';
+                    else if (value <= 450) colorClass = 'incidence-moderate';
+                    else if (value <= 650) colorClass = 'incidence-high';
+                    else colorClass = 'incidence-very-high';
+                } else if (currentDataType === 'intervention') {
+                    if (value >= 1000) colorClass = 'incidence-low';
+                    else if (value >= 500) colorClass = 'incidence-moderate';
+                    else if (value >= 250) colorClass = 'incidence-high';
+                    else colorClass = 'incidence-very-high';
+                } else if (currentDataType === 'stockout') {
+                    if (value <= 3) colorClass = 'incidence-low';
+                    else if (value <= 7) colorClass = 'incidence-moderate';
+                    else if (value <= 15) colorClass = 'incidence-high';
+                    else colorClass = 'incidence-very-high';
                 }
 
                 const monthBox = document.createElement('div');
                 monthBox.className = `month-box ${colorClass}`;
                 monthBox.innerHTML = `
                     <div class="month-name">${monthNames[index]}</div>
-                    <div class="month-value">${incidence}</div>
+                    <div class="month-value">${value}</div>
                 `;
                 monthsGrid.appendChild(monthBox);
             });
