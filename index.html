@@ -1,321 +1,1625 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malaria Surveillance Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f6f8;
-    }
-    header {
-      background: #00796b;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 3fr;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    aside {
-      background: #ffffff;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    section {
-      background: #ffffff;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    .card-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    .card {
-      background: #e0f2f1;
-      padding: 1rem;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: bold;
-      color: #004d40;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .card:hover {
-      background: #b2dfdb;
-    }
-    canvas {
-      margin-top: 1rem;
-    }
-    select, button {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.5rem;
-    }
-  </style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title-section {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .header-filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-filter-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .header-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c6693;
+            cursor: pointer;
+            min-width: 180px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c6693' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        .header-select:hover {
+            background: white;
+        }
+
+        .header-select:focus {
+            outline: none;
+            border-color: white;
+        }
+
+        .filter-indicator {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid #fbbf24;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .filter-indicator.active {
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .header-reset-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .header-reset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 340px 1.2fr 1.2fr 250px;
+            gap: 5px;
+            max-width: 1900px;
+            margin: 20px auto;
+            padding: 0 20px 20px 20px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            height: calc(100vh - 160px);
+            padding-right: 8px;
+        }
+
+        .sidebar-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            grid-auto-rows: 1fr;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .sidebar-card.active {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.3);
+        }
+
+        .sidebar-card.active .sidebar-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sidebar-card.active .sidebar-value {
+            color: white;
+        }
+
+        .sidebar-card.active .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .sidebar-card.active::before {
+            height: 6px;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .left-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .left-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .geo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .geo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .geo-card.active {
+            background: #2c6693;
+            color: white;
+            font-weight: 700;
+        }
+
+        .geo-card-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .geo-card-name {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .geo-card-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .geo-stat {
+            flex: 1;
+        }
+
+        .geo-stat-label {
+            font-size: 9px;
+            font-weight: 600;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .geo-stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        .geo-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+        }
+
+        .geo-select:focus {
+            outline: none;
+            border-color: #2c6693;
+        }
+
+        .middle-column {
+            display: contents;
+            gap: 5px;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+        }
+
+        .indicator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.15);
+        }
+
+        .indicator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+        }
+
+        .indicator-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .indicator-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 160px);
+            min-height: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #2c6693;
+            text-transform: uppercase;
+        }
+
+        .mini-charts {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .mini-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .mini-chart-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            height: 100%;
+            min-height: 0;
+            position: relative;
+            flex: 1;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            grid-column: 3;
+        }
+
+        .right-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .right-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monthly-incidence-grid {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+            grid-column: 4;
+        }
+
+        .monthly-incidence-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 5px;
+            flex: 1;
+        }
+
+        .month-box {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .month-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .month-name {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .month-value {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .incidence-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .incidence-moderate {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .incidence-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .incidence-very-high {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-large {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        .reset-btn {
+            background: #2c6693;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background: #1f4a6a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .indicators-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .right-column {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .indicators-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <header>
-    <h1>Malaria Surveillance Dashboard</h1>
-  </header>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title-section">
+                <h1 style="font-size: 28px; font-weight: 900;">Malaria Analytics Dashboard</h1>
+                <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">Comprehensive Surveillance & Treatment Monitoring</div>
+            </div>
+            
+            <div class="header-filters">
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Data Type</label>
+                    <select class="header-select" id="dataTypeSelect" onchange="handleDataTypeChange()">
+                        <option value="surveillance">Surveillance</option>
+                        <option value="intervention">Routine Intervention</option>
+                        <option value="stockout">Stockout</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Time Period</label>
+                    <select class="header-select" id="timePeriodSelect" onchange="handleTimePeriodChange()">
+                        <option value="2024">January 2024 - December 2024</option>
+                        <option value="2023">January 2023 - December 2023</option>
+                        <option value="2022">January 2022 - December 2022</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">District</label>
+                    <select class="header-select" id="headerDistrictSelect" onchange="handleHeaderDistrictChange()">
+                        <option value="">All Districts</option>
+                        <option value="Bo">Bo</option>
+                        <option value="Kenema">Kenema</option>
+                        <option value="Kono">Kono</option>
+                        <option value="Western Area">Western Area</option>
+                        <option value="Port Loko">Port Loko</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Chiefdom</label>
+                    <select class="header-select" id="headerChiefdomSelect" onchange="handleHeaderChiefdomChange()" disabled>
+                        <option value="">Select District First</option>
+                    </select>
+                </div>
+                
+                <button class="header-reset-btn" onclick="resetSelection()">Reset</button>
+                
+                <div style="background: rgba(46, 125, 50, 0.8); color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+                    📊 Data Source: CSV
+                </div>
+                
+                <div class="filter-indicator" id="filterIndicator">
+                    📊 Filtering Active
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <div class="container">
-    <aside>
-      <h3>Filter Options</h3>
-      <label>District:</label>
-      <select id="headerDistrictSelect">
-        <option value="national">National</option>
-      </select>
-      <label>Chiefdom:</label>
-      <select id="headerChiefdomSelect">
-        <option value="">All Chiefdoms</option>
-      </select>
-      <label>Data Type:</label>
-      <select id="dataTypeSelect">
-        <option value="surveillance">Surveillance</option>
-        <option value="intervention">Intervention</option>
-        <option value="stockout">Stockout</option>
-      </select>
-      <label>Year:</label>
-      <select id="yearSelect">
-        <option value="2024">2024</option>
-      </select>
-      <button onclick="applyFilters()">Apply Filters</button>
-    </aside>
+    <div class="main-container">
+        <div class="left-column">
+            <div class="sidebar-cards-grid" id="sidebarCardsGrid">
+                <!-- Cards will be dynamically populated based on data type -->
+            </div>
+        </div>
 
-    <section>
-      <div class="card-container" id="cards"></div>
-      <canvas id="trendChart"></canvas>
-      <canvas id="monthlyChart"></canvas>
-    </section>
-  </div>
+        <div class="middle-column">
+            <div class="charts-section">
+                <div class="section-title">Key Performance Rates</div>
+                <div class="mini-charts">
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">All Performance Metrics</div>
+                        <div class="chart-container"><canvas id="combinedRates"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <script>
-  /* ===============================
-     FULLY UPDATED SCRIPT
-     =============================== */
-  let charts = {};
-  let rawCSVData = [];
-  let currentDistrict = 'national';
-  let currentChiefdom = '';
-  let currentDataType = 'surveillance';
-  let currentYear = '2024';
-  let chiefdomsData = {};
-  const CSV_FILE = 'malaria_data_template.csv';
+        <div class="right-column">
+            <div class="chart-card">
+                <div class="chart-title" id="chartTitle">Monthly Trends - All Indicators (January-December 2024)</div>
+                <div class="chart-large"><canvas id="trendCombined"></canvas></div>
+            </div>
+        </div>
 
-  // Clean and sanitize rows
-  function sanitizeRow(row) {
-      const numericCols = [
-          'Population','OPD_Visits','Suspected_Cases','Tests_Performed','Confirmed_Cases',
-          'Treated_Cases','Admissions','Deaths','Presumed_Cases','Reporting_Rate',
-          'Test_Positivity_Rate','Testing_Rate','Treatment_Rate','Case_Fatality_Rate',
-          'Incidence_Per_1000','IPTp_Coverage','IPTi_Coverage','ANC_1st_Visit','ANC_4plus_Visits',
-          'Penta3_Coverage','Malaria_Vaccine','LLIN_Distribution','LLIN_Usage','IRS_Coverage',
-          'SMC_Coverage','Cases_Averted','RDT_Stock_Days','ACT_Stock_Days',
-          'RDT_Stockout_Percent','ACT_Stockout_Percent','Untreated_Cases'
-      ];
-      numericCols.forEach(col => {
-          if (row[col] === '' || row[col] == null || isNaN(row[col])) row[col] = 0;
-          else row[col] = parseFloat(row[col]);
-      });
-      ['Year','Month','District','Chiefdom','DataType'].forEach(c=>{
-          if(!row[c]) row[c] = 'Unknown';
-          else if(typeof row[c] === 'string') row[c] = row[c].trim().replace(/\uFEFF/g, '');
-      });
-      return row;
-  }
+        <div class="monthly-incidence-grid">
+            <div class="monthly-incidence-title">Monthly Incidence Rate</div>
+            <div class="months-grid" id="monthsGrid"></div>
+        </div>
+    </div>
 
-  async function loadCSVData() {
-      try {
-          const response = await fetch(CSV_FILE);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const csvText = await response.text();
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        // DASHBOARD CODE - CSV ONLY
+        // ============================================
+        
+        let charts = {};
+        let currentSelection = 'national';
+        let legendFilter = null;
+        let currentTimePeriod = '2024';
+        let activeCardFilter = null;
+        let currentDataType = 'surveillance';
 
-          Papa.parse(csvText, {
-              header: true,
-              dynamicTyping: false,
-              skipEmptyLines: true,
-              complete: function(results) {
-                  const cleaned = results.data.map(sanitizeRow);
-                  rawCSVData = cleaned.filter(r => r.District && r.Month && r.DataType);
-                  console.log('✅ Cleaned CSV loaded:', rawCSVData.length, 'rows');
-                  console.log('📊 Sample row:', rawCSVData[0]);
-                  initializeDashboard();
-              },
-              error: function(err) {
-                  alert('CSV Parsing Error: ' + err.message);
-              }
-          });
-      } catch (e) {
-          alert('Error loading CSV: ' + e.message);
-      }
-  }
+        // Card configurations for different data types
+        const cardConfigs = {
+            'surveillance': [
+                { id: 'sideIndOPD', label: 'Total OPD Visits', subtitle: 'All age groups', metric: 'opd' },
+                { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
+                { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Microscopy & RDT', metric: 'tests' },
+                { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
+                { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'ACT treatment', metric: 'treated' },
+                { id: 'sideIndAdmissions', label: 'Admissions', subtitle: 'Malaria admissions', metric: 'admissions' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                { id: 'sideIndPositivity', label: 'Test Positivity', subtitle: 'Confirmed / Tested', metric: 'positivity', isPercent: true },
+                { id: 'sideIndReportingRate', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true },
+                { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Suspected tested', metric: 'testing', isPercent: true },
+                { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Confirmed treated', metric: 'treatment', isPercent: true },
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' },
+                { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                { id: 'sideIndCaseFatality', label: 'Case Fatality', subtitle: 'Deaths / Confirmed', metric: 'fatality', isPercent: true }
+            ],
+            'intervention': [
+                { id: 'sideIndIPTp', label: 'IPTp Coverage', subtitle: 'Pregnant women (3+ doses)', metric: 'iptp', isPercent: true },
+                { id: 'sideIndIPTi', label: 'IPTi Coverage', subtitle: 'Infants immunized', metric: 'ipti', isPercent: true },
+                { id: 'sideIndANC', label: 'ANC Coverage', subtitle: '1st visit', metric: 'anc', isPercent: true },
+                { id: 'sideIndANC4', label: 'ANC4+ Coverage', subtitle: '4+ visits', metric: 'anc4', isPercent: true },
+                { id: 'sideIndPenta3', label: 'Penta3 Coverage', subtitle: 'Children immunized', metric: 'penta3', isPercent: true },
+                { id: 'sideIndMalariaVaccine', label: 'Malaria Vaccine', subtitle: 'Children vaccinated', metric: 'vaccine', isPercent: true },
+                { id: 'sideIndLLIN', label: 'LLIN Distribution', subtitle: 'Households covered', metric: 'llin', isPercent: true },
+                { id: 'sideIndLLINUsage', label: 'LLIN Usage', subtitle: 'Population using nets', metric: 'llinUsage', isPercent: true },
+                { id: 'sideIndIRS', label: 'IRS Coverage', subtitle: 'Households sprayed', metric: 'irs', isPercent: true },
+                { id: 'sideIndSMC', label: 'SMC Coverage', subtitle: 'Seasonal chemoprevention', metric: 'smc', isPercent: true },
+                { id: 'sideIndCasesAverted', label: 'Cases Averted', subtitle: 'Due to interventions', metric: 'averted' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' },
+                { id: 'sideIndReporting', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true }
+            ],
+            'stockout': [
+                { id: 'sideIndRDTStock', label: 'RDT Stock Level', subtitle: 'Days of stock', metric: 'rdtStock' },
+                { id: 'sideIndRDTStockout', label: 'RDT Stockout', subtitle: 'Facilities affected', metric: 'rdtStockout', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACTStock', label: 'ACT Stock Level', subtitle: 'Days of stock', metric: 'actStock' },
+                { id: 'sideIndACTStockout', label: 'ACT Stockout', subtitle: 'Facilities affected', metric: 'actStockout', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
+                { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Limited by RDT', metric: 'tests' },
+                { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
+                { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'Limited by ACT', metric: 'treated' },
+                { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                { id: 'sideIndUntreated', label: 'Untreated Cases', subtitle: 'Due to stockout', metric: 'untreated', color: '#d32f2f' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Limited by supply', metric: 'testing', isPercent: true },
+                { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Limited by supply', metric: 'treatment', isPercent: true },
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' }
+            ]
+        };
 
-  function initializeDashboard() {
-      extractChiefdoms();
-      populateDistrictDropdown();
-      renderCards();
-      renderTrendChart();
-      renderMonthlyChart();
-  }
+        // Data variations for different districts and time periods
+        // Data will be loaded from CSV file
+        let csvData = [];
+        let rawCSVData = [];
+        
+        // Load CSV data on page load
+        async function loadCSVData() {
+            console.log('🔄 Starting CSV load...');
+            try {
+                const response = await fetch('malaria_data_template.csv');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                console.log('📄 CSV file fetched, size:', csvText.length, 'characters');
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    transformHeader: function(header) {
+                        return header.trim();
+                    },
+                    complete: function(results) {
+                        rawCSVData = results.data.filter(row => row.District && row.Month && row.DataType);
+                        console.log('✅ CSV data loaded:', rawCSVData.length, 'rows');
+                        console.log('📊 Sample row:', rawCSVData[0]);
+                        
+                        if (rawCSVData.length === 0) {
+                            alert('⚠️ CSV file is empty or has no valid data rows. Please check your CSV file has data below the header row.');
+                            return;
+                        }
+                        
+                        processCSVData();
+                        initializeDashboard();
+                    },
+                    error: function(error) {
+                        console.error('❌ Error parsing CSV:', error);
+                        alert('Error loading CSV data: ' + error.message + '\n\nPlease check:\n1. File is named: malaria_data_template.csv\n2. File is in the same folder as this HTML\n3. File has the correct format');
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error loading CSV:', error);
+                alert('Error loading CSV file: ' + error.message + '\n\nPlease ensure:\n1. malaria_data_template.csv is in the same folder as this HTML file\n2. You are opening this file through a web server or allowing local file access\n3. The CSV file is properly formatted');
+            }
+        }
+        
+        // Process CSV data into usable format
+        function processCSVData() {
+            csvData = rawCSVData;
+            console.log('Processed CSV data ready');
+        }
+        
+        // Call CSV loader on page load
+        window.addEventListener('load', loadCSVData);
 
-  function extractChiefdoms() {
-      chiefdomsData = {};
-      rawCSVData.forEach(row => {
-          if (row.District && row.Chiefdom) {
-              if (!chiefdomsData[row.District]) chiefdomsData[row.District] = [];
-              if (!chiefdomsData[row.District].includes(row.Chiefdom))
-                  chiefdomsData[row.District].push(row.Chiefdom);
-          }
-      });
-  }
 
-  function populateDistrictDropdown() {
-      const districtSelect = document.getElementById('headerDistrictSelect');
-      while (districtSelect.options.length > 1) districtSelect.remove(1);
-      const districts = Object.keys(chiefdomsData).sort();
-      districts.forEach(d => {
-          const opt = document.createElement('option');
-          opt.value = d;
-          opt.textContent = d;
-          districtSelect.appendChild(opt);
-      });
-      districtSelect.addEventListener('change', e => {
-          currentDistrict = e.target.value;
-          populateChiefdomDropdown(currentDistrict);
-      });
-  }
+        // Chiefdoms will be populated from CSV data
+        let chiefdomsData = {};
+        
+        function extractChiefdomsFromCSV() {
+            chiefdomsData = {};
+            rawCSVData.forEach(row => {
+                if (row.District && row.Chiefdom) {
+                    if (!chiefdomsData[row.District]) {
+                        chiefdomsData[row.District] = [];
+                    }
+                    if (!chiefdomsData[row.District].includes(row.Chiefdom)) {
+                        chiefdomsData[row.District].push(row.Chiefdom);
+                    }
+                }
+            });
+            console.log('Chiefdoms extracted from CSV:', JSON.stringify(chiefdomsData, null, 2));
+        }
 
-  function populateChiefdomDropdown(district) {
-      const chiefdomSelect = document.getElementById('headerChiefdomSelect');
-      while (chiefdomSelect.options.length > 1) chiefdomSelect.remove(1);
-      if (chiefdomsData[district]) {
-          chiefdomsData[district].forEach(c => {
-              const opt = document.createElement('option');
-              opt.value = c;
-              opt.textContent = c;
-              chiefdomSelect.appendChild(opt);
-          });
-      }
-  }
+        function initializeDashboard() {
+            extractChiefdomsFromCSV();
+            populateDistrictDropdown();
+            initDashboard();
+        }
+        
+        // Populate district dropdown from CSV
+        function populateDistrictDropdown() {
+            const districtSelect = document.getElementById('headerDistrictSelect');
+            // Clear existing options except "All Districts"
+            while (districtSelect.options.length > 1) {
+                districtSelect.remove(1);
+            }
+            
+            const districts = Object.keys(chiefdomsData).sort();
+            districts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+        }
+        
+        // Get data from CSV for specific level and data type
+        function getCSVDataForLevel(level, dataType) {
+            console.log('🔍 Getting CSV data for:', level, dataType, 'Year:', currentTimePeriod);
+            
+            if (!rawCSVData || rawCSVData.length === 0) {
+                console.error('❌ No CSV data available in rawCSVData');
+                return null;
+            }
+            
+            console.log('📊 Total CSV rows available:', rawCSVData.length);
+            
+            // Filter by data type
+            let filteredData = rawCSVData.filter(row => row.DataType === dataType);
+            console.log('📋 Rows matching DataType', dataType + ':', filteredData.length);
+            
+            // Filter by level (district/chiefdom or national)
+            if (level !== 'national') {
+                // Check if it's a chiefdom (contains comma like "District,Chiefdom")
+                if (level.includes(',')) {
+                    const [district, chiefdom] = level.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                    console.log('🏘️ Rows for chiefdom', chiefdom + ':', filteredData.length);
+                } else {
+                    // It's a district
+                    filteredData = filteredData.filter(row => row.District === level);
+                    console.log('🏙️ Rows for district', level + ':', filteredData.length);
+                }
+            } else {
+                console.log('🌍 Using all districts (national level)');
+            }
+            
+            // Filter by time period (year)
+            filteredData = filteredData.filter(row => row.Year == currentTimePeriod);
+            console.log('📅 Rows for year', currentTimePeriod + ':', filteredData.length);
+            
+            if (filteredData.length === 0) {
+                console.warn('⚠️ No data found for', level, dataType, currentTimePeriod);
+                return null;
+            }
+            
+            // Aggregate the data
+            const aggregated = {
+                opd: 0,
+                suspected: 0,
+                tests: 0,
+                confirmed: 0,
+                treated: 0,
+                admissions: 0,
+                deaths: 0,
+                presumed: 0,
+                population: 0,
+                reporting: 0,
+                // Calculated fields from CSV
+                positivity: 0,
+                testing: 0,
+                treatment: 0,
+                fatality: 0,
+                incidence: 0,
+                // Intervention metrics
+                iptp: 0,
+                ipti: 0,
+                anc: 0,
+                anc4: 0,
+                penta3: 0,
+                vaccine: 0,
+                llin: 0,
+                llinUsage: 0,
+                irs: 0,
+                smc: 0,
+                averted: 0,
+                // Stockout metrics
+                rdtStock: 0,
+                actStock: 0,
+                rdtStockout: 0,
+                actStockout: 0,
+                untreated: 0
+            };
+            
+            let reportingCount = 0;
+            let interventionCount = 0;
+            let stockoutCount = 0;
+            let calculatedCount = 0;
+            
+            filteredData.forEach(row => {
+                aggregated.opd += row.OPD_Visits || 0;
+                aggregated.suspected += row.Suspected_Cases || 0;
+                aggregated.tests += row.Tests_Performed || 0;
+                aggregated.confirmed += row.Confirmed_Cases || 0;
+                aggregated.treated += row.Treated_Cases || 0;
+                aggregated.admissions += row.Admissions || 0;
+                aggregated.deaths += row.Deaths || 0;
+                aggregated.presumed += row.Presumed_Cases || 0;
+                
+                if (row.Population) aggregated.population = Math.max(aggregated.population, row.Population);
+                if (row.Reporting_Rate) {
+                    aggregated.reporting += parseFloat(row.Reporting_Rate) || 0;
+                    reportingCount++;
+                }
+                
+                // Read calculated fields directly from CSV
+                if (row.Test_Positivity_Rate !== undefined && row.Test_Positivity_Rate !== null && row.Test_Positivity_Rate !== '') {
+                    aggregated.positivity += parseFloat(row.Test_Positivity_Rate) || 0;
+                    calculatedCount++;
+                }
+                if (row.Testing_Rate) aggregated.testing += parseFloat(row.Testing_Rate) || 0;
+                if (row.Treatment_Rate) aggregated.treatment += parseFloat(row.Treatment_Rate) || 0;
+                if (row.Case_Fatality_Rate) aggregated.fatality += parseFloat(row.Case_Fatality_Rate) || 0;
+                if (row.Incidence_Per_1000) aggregated.incidence += parseFloat(row.Incidence_Per_1000) || 0;
+                if (row.Untreated_Cases) aggregated.untreated += parseFloat(row.Untreated_Cases) || 0;
+                
+                // Intervention metrics (average percentages)
+                if (row.IPTp_Coverage) {
+                    aggregated.iptp += parseFloat(row.IPTp_Coverage) || 0;
+                    interventionCount++;
+                }
+                if (row.IPTi_Coverage) aggregated.ipti += parseFloat(row.IPTi_Coverage) || 0;
+                if (row.ANC_1st_Visit) aggregated.anc += parseFloat(row.ANC_1st_Visit) || 0;
+                if (row.ANC_4plus_Visits) aggregated.anc4 += parseFloat(row.ANC_4plus_Visits) || 0;
+                if (row.Penta3_Coverage) aggregated.penta3 += parseFloat(row.Penta3_Coverage) || 0;
+                if (row.Malaria_Vaccine) aggregated.vaccine += parseFloat(row.Malaria_Vaccine) || 0;
+                if (row.LLIN_Distribution) aggregated.llin += parseFloat(row.LLIN_Distribution) || 0;
+                if (row.LLIN_Usage) aggregated.llinUsage += parseFloat(row.LLIN_Usage) || 0;
+                if (row.IRS_Coverage) aggregated.irs += parseFloat(row.IRS_Coverage) || 0;
+                if (row.SMC_Coverage) aggregated.smc += parseFloat(row.SMC_Coverage) || 0;
+                if (row.Cases_Averted) aggregated.averted += row.Cases_Averted || 0;
+                
+                // Stockout metrics
+                if (row.RDT_Stock_Days) {
+                    aggregated.rdtStock += parseFloat(row.RDT_Stock_Days) || 0;
+                    stockoutCount++;
+                }
+                if (row.ACT_Stock_Days) aggregated.actStock += parseFloat(row.ACT_Stock_Days) || 0;
+                if (row.RDT_Stockout_Percent) aggregated.rdtStockout += parseFloat(row.RDT_Stockout_Percent) || 0;
+                if (row.ACT_Stockout_Percent) aggregated.actStockout += parseFloat(row.ACT_Stockout_Percent) || 0;
+            });
+            
+            // Calculate averages for percentage fields
+            if (reportingCount > 0) aggregated.reporting = (aggregated.reporting / reportingCount).toFixed(0);
+            if (interventionCount > 0) {
+                aggregated.iptp = (aggregated.iptp / interventionCount).toFixed(0);
+                aggregated.ipti = (aggregated.ipti / interventionCount).toFixed(0);
+                aggregated.anc = (aggregated.anc / interventionCount).toFixed(0);
+                aggregated.anc4 = (aggregated.anc4 / interventionCount).toFixed(0);
+                aggregated.penta3 = (aggregated.penta3 / interventionCount).toFixed(0);
+                aggregated.vaccine = (aggregated.vaccine / interventionCount).toFixed(0);
+                aggregated.llin = (aggregated.llin / interventionCount).toFixed(0);
+                aggregated.llinUsage = (aggregated.llinUsage / interventionCount).toFixed(0);
+                aggregated.irs = (aggregated.irs / interventionCount).toFixed(0);
+                aggregated.smc = (aggregated.smc / interventionCount).toFixed(0);
+            }
+            if (stockoutCount > 0) {
+                aggregated.rdtStock = Math.round(aggregated.rdtStock / stockoutCount);
+                aggregated.actStock = Math.round(aggregated.actStock / stockoutCount);
+                aggregated.rdtStockout = (aggregated.rdtStockout / stockoutCount).toFixed(0);
+                aggregated.actStockout = (aggregated.actStockout / stockoutCount).toFixed(0);
+            }
+            
+            // Average the calculated metrics from CSV (don't recalculate!)
+            if (calculatedCount > 0) {
+                aggregated.positivity = (aggregated.positivity / calculatedCount).toFixed(1);
+                aggregated.testing = (aggregated.testing / calculatedCount).toFixed(0);
+                aggregated.treatment = (aggregated.treatment / calculatedCount).toFixed(0);
+                aggregated.fatality = (aggregated.fatality / calculatedCount).toFixed(2);
+                aggregated.incidence = (aggregated.incidence / calculatedCount).toFixed(1);
+            }
+            // Untreated is already summed, don't average it
+            
+            return aggregated;
+        }
+        
+        // Get monthly data from CSV for charts
+        function getMonthlyCSVData(level, dataType) {
+            if (!rawCSVData || rawCSVData.length === 0) {
+                return null;
+            }
+            
+            const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            let filteredData = rawCSVData.filter(row => 
+                row.DataType === dataType && row.Year == currentTimePeriod
+            );
+            
+            // Filter by level
+            if (level !== 'national') {
+                if (level.includes(',')) {
+                    const [district, chiefdom] = level.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                } else {
+                    filteredData = filteredData.filter(row => row.District === level);
+                }
+            }
+            
+            const monthlyData = {
+                suspected: [],
+                tests: [],
+                confirmed: [],
+                treated: [],
+                presumed: [],
+                positivity: [],
+                testing: [],
+                treatment: [],
+                reporting: []
+            };
+            
+            monthOrder.forEach(month => {
+                const monthData = filteredData.filter(row => row.Month === month);
+                
+                if (monthData.length > 0) {
+                    const suspected = monthData.reduce((sum, row) => sum + (row.Suspected_Cases || 0), 0);
+                    const tests = monthData.reduce((sum, row) => sum + (row.Tests_Performed || 0), 0);
+                    const confirmed = monthData.reduce((sum, row) => sum + (row.Confirmed_Cases || 0), 0);
+                    const treated = monthData.reduce((sum, row) => sum + (row.Treated_Cases || 0), 0);
+                    const presumed = monthData.reduce((sum, row) => sum + (row.Presumed_Cases || 0), 0);
+                    const reportingSum = monthData.reduce((sum, row) => sum + (row.Reporting_Rate || 0), 0);
+                    
+                    // Read calculated values from CSV instead of calculating
+                    const positivitySum = monthData.reduce((sum, row) => sum + (parseFloat(row.Test_Positivity_Rate) || 0), 0);
+                    const testingSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Testing_Rate) || 0), 0);
+                    const treatmentSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Treatment_Rate) || 0), 0);
+                    
+                    monthlyData.suspected.push(suspected);
+                    monthlyData.tests.push(tests);
+                    monthlyData.confirmed.push(confirmed);
+                    monthlyData.treated.push(treated);
+                    monthlyData.presumed.push(presumed);
+                    monthlyData.positivity.push(monthData.length > 0 ? parseFloat((positivitySum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.testing.push(monthData.length > 0 ? parseFloat((testingSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.treatment.push(monthData.length > 0 ? parseFloat((treatmentSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.reporting.push(monthData.length > 0 ? parseFloat((reportingSum / monthData.length).toFixed(1)) : 0);
+                } else {
+                    monthlyData.suspected.push(0);
+                    monthlyData.tests.push(0);
+                    monthlyData.confirmed.push(0);
+                    monthlyData.treated.push(0);
+                    monthlyData.presumed.push(0);
+                    monthlyData.positivity.push(0);
+                    monthlyData.testing.push(0);
+                    monthlyData.treatment.push(0);
+                    monthlyData.reporting.push(0);
+                }
+            });
+            
+            return monthlyData;
+        }
 
-  function applyFilters() {
-      currentDistrict = document.getElementById('headerDistrictSelect').value;
-      currentChiefdom = document.getElementById('headerChiefdomSelect').value;
-      currentDataType = document.getElementById('dataTypeSelect').value;
-      currentYear = document.getElementById('yearSelect').value;
-      renderCards();
-      renderTrendChart();
-      renderMonthlyChart();
-  }
+        function initDashboard() {
+            renderCards();
+            updateIndicators('national');
+            renderAllCharts();
+            renderMonthlyIncidence();
+            
+        }
 
-  function filterData() {
-      return rawCSVData.filter(row =>
-          (currentDistrict === 'national' || row.District === currentDistrict) &&
-          (currentChiefdom === '' || row.Chiefdom === currentChiefdom) &&
-          row.DataType === currentDataType &&
-          row.Year == currentYear
-      );
-  }
+        function renderCards() {
+            const grid = document.getElementById('sidebarCardsGrid');
+            const cards = cardConfigs[currentDataType];
+            
+            grid.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'sidebar-card';
+                cardEl.setAttribute('data-metric', card.metric);
+                cardEl.onclick = () => filterByCard(card.metric);
+                
+                const colorStyle = card.color ? `style="color: ${card.color};"` : '';
+                const fontSize = card.isPercent ? 'style="font-size: 18px;"' : '';
+                
+                cardEl.innerHTML = `
+                    <div class="sidebar-label">${card.label}</div>
+                    <div class="sidebar-value" id="${card.id}" ${colorStyle} ${fontSize}>0</div>
+                    <div class="sidebar-subtitle">${card.subtitle}</div>
+                `;
+                
+                grid.appendChild(cardEl);
+            });
+        }
 
-  function renderCards() {
-      const filtered = filterData();
-      const totals = {
-          OPD_Visits: 0, Confirmed_Cases: 0, Deaths: 0,
-          Reporting_Rate: 0, Test_Positivity_Rate: 0,
-          Treatment_Rate: 0, Incidence_Per_1000: 0
-      };
+        function filterByCard(cardType) {
+            // Toggle card selection
+            const cards = document.querySelectorAll('.sidebar-card');
+            cards.forEach(card => {
+                if (card.dataset.metric === cardType) {
+                    if (card.classList.contains('active')) {
+                        card.classList.remove('active');
+                        activeCardFilter = null;
+                        document.getElementById('filterIndicator').classList.remove('active');
+                    } else {
+                        cards.forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        activeCardFilter = cardType;
+                        document.getElementById('filterIndicator').classList.add('active');
+                    }
+                }
+            });
+            
+            renderAllCharts();
+        }
 
-      filtered.forEach(r => {
-          totals.OPD_Visits += r.OPD_Visits;
-          totals.Confirmed_Cases += r.Confirmed_Cases;
-          totals.Deaths += r.Deaths;
-          totals.Reporting_Rate += r.Reporting_Rate;
-          totals.Test_Positivity_Rate += r.Test_Positivity_Rate;
-          totals.Treatment_Rate += r.Treatment_Rate;
-          totals.Incidence_Per_1000 += r.Incidence_Per_1000;
-      });
+        function selectNational() {
+            currentSelection = 'national';
+            activeCardFilter = null;
+            
+            document.getElementById('headerDistrictSelect').value = '';
+            document.getElementById('headerChiefdomSelect').value = '';
+            document.getElementById('headerChiefdomSelect').disabled = true;
+            document.getElementById('headerChiefdomSelect').innerHTML = '<option value="">Select District First</option>';
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('filterIndicator').classList.remove('active');
+            
+            updateIndicators('national');
+            renderAllCharts();
+        }
 
-      const div = document.getElementById('cards');
-      div.innerHTML = `
-        <div class="card">OPD Visits<br>${totals.OPD_Visits.toLocaleString()}</div>
-        <div class="card">Confirmed Cases<br>${totals.Confirmed_Cases.toLocaleString()}</div>
-        <div class="card">Deaths<br>${totals.Deaths.toLocaleString()}</div>
-        <div class="card">Reporting Rate<br>${(totals.Reporting_Rate/filtered.length).toFixed(1)}%</div>
-        <div class="card">Positivity Rate<br>${(totals.Test_Positivity_Rate/filtered.length).toFixed(1)}%</div>
-        <div class="card">Treatment Rate<br>${(totals.Treatment_Rate/filtered.length).toFixed(1)}%</div>
-        <div class="card">Incidence<br>${(totals.Incidence_Per_1000/filtered.length).toFixed(1)}</div>
-      `;
-  }
+        function handleTimePeriodChange() {
+            currentTimePeriod = document.getElementById('timePeriodSelect').value;
+            updateIndicators(currentSelection);
+            renderAllCharts();
+            renderMonthlyIncidence();
+        }
 
-  function renderTrendChart() {
-      const filtered = filterData();
-      const months = [...new Set(filtered.map(r => r.Month))];
-      const monthlyCases = months.map(m => {
-          const subset = filtered.filter(r => r.Month === m);
-          return subset.reduce((sum, r) => sum + r.Confirmed_Cases, 0);
-      });
+        function handleDataTypeChange() {
+            currentDataType = document.getElementById('dataTypeSelect').value;
+            activeCardFilter = null; // Reset card filter when changing data type
+            renderCards(); // Re-render cards for new data type
+            updateIndicators(currentSelection);
+            renderAllCharts();
+            renderMonthlyIncidence();
+        }
 
-      if (charts.trendChart) charts.trendChart.destroy();
-      charts.trendChart = new Chart(document.getElementById('trendChart'), {
-          type: 'line',
-          data: {
-              labels: months,
-              datasets: [{
-                  label: 'Confirmed Cases',
-                  data: monthlyCases,
-                  borderColor: '#00796b',
-                  backgroundColor: '#b2dfdb'
-              }]
-          },
-          options: {
-              responsive: true,
-              plugins: { legend: { display: true } }
-          }
-      });
-  }
+        function handleHeaderDistrictChange() {
+            const district = document.getElementById('headerDistrictSelect').value;
+            
+            if (!district) {
+                selectNational();
+                return;
+            }
+            selectDistrict(district);
+        }
 
-  function renderMonthlyChart() {
-      const filtered = filterData();
-      const months = [...new Set(filtered.map(r => r.Month))];
-      const deaths = months.map(m => {
-          const subset = filtered.filter(r => r.Month === m);
-          return subset.reduce((sum, r) => sum + r.Deaths, 0);
-      });
+        function selectDistrict(district) {
+            currentSelection = district;
+            activeCardFilter = null;
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            
+            const headerChiefdomSelect = document.getElementById('headerChiefdomSelect');
+            headerChiefdomSelect.disabled = false;
+            headerChiefdomSelect.value = '';
+            headerChiefdomSelect.innerHTML = '<option value="">All Chiefdoms</option>' + 
+                chiefdomsData[district].map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            updateIndicators(district);
+            renderAllCharts();
+        }
 
-      if (charts.monthlyChart) charts.monthlyChart.destroy();
-      charts.monthlyChart = new Chart(document.getElementById('monthlyChart'), {
-          type: 'bar',
-          data: {
-              labels: months,
-              datasets: [{
-                  label: 'Deaths',
-                  data: deaths,
-                  backgroundColor: '#ff7043'
-              }]
-          },
-          options: {
-              responsive: true,
-              plugins: { legend: { display: true } }
-          }
-      });
-  }
+        function handleHeaderChiefdomChange() {
+            const chiefdom = document.getElementById('headerChiefdomSelect').value;
+            
+            if (!chiefdom) {
+                const district = document.getElementById('headerDistrictSelect').value;
+                if (district) {
+                    selectDistrict(district);
+                }
+                return;
+            }
+            selectChiefdom(chiefdom);
+        }
 
-  window.addEventListener('load', loadCSVData);
-  </script>
+        function selectChiefdom(chiefdom) {
+            currentSelection = chiefdom;
+            activeCardFilter = null;
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            updateIndicators(chiefdom);
+            renderAllCharts();
+        }
+
+        function resetSelection() {
+            selectNational();
+        }
+
+        function renderMonthlyIncidence() {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthsGrid = document.getElementById('monthsGrid');
+            monthsGrid.innerHTML = '';
+
+            if (!rawCSVData || rawCSVData.length === 0) {
+                console.warn('No CSV data for monthly incidence');
+                return;
+            }
+            
+            // Filter data by current selection and data type
+            let filteredData = rawCSVData.filter(row => 
+                row.DataType === currentDataType && row.Year == currentTimePeriod
+            );
+            
+            if (currentSelection !== 'national') {
+                if (currentSelection.includes(',')) {
+                    const [district, chiefdom] = currentSelection.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                } else {
+                    filteredData = filteredData.filter(row => row.District === currentSelection);
+                }
+            }
+            
+            monthOrder.forEach((fullMonth, index) => {
+                const monthData = filteredData.filter(row => row.Month === fullMonth);
+                
+                // Get incidence directly from CSV
+                let incidence = 0;
+                if (monthData.length > 0) {
+                    const incidenceSum = monthData.reduce((sum, row) => 
+                        sum + (parseFloat(row.Incidence_Per_1000) || 0), 0
+                    );
+                    incidence = Math.round(incidenceSum / monthData.length);
+                }
+                
+                let colorClass = '';
+                if (incidence < 250) {
+                    colorClass = 'incidence-low';
+                } else if (incidence <= 450) {
+                    colorClass = 'incidence-moderate';
+                } else if (incidence <= 650) {
+                    colorClass = 'incidence-high';
+                } else {
+                    colorClass = 'incidence-very-high';
+                }
+
+                const monthBox = document.createElement('div');
+                monthBox.className = `month-box ${colorClass}`;
+                monthBox.innerHTML = `
+                    <div class="month-name">${monthNames[index]}</div>
+                    <div class="month-value">${incidence}</div>
+                `;
+                monthsGrid.appendChild(monthBox);
+            });
+        }
+
+        function updateIndicators(level) {
+            // Get data from CSV ONLY
+            const data = getCSVDataForLevel(level, currentDataType);
+            
+            if (!data) {
+                console.warn('No CSV data available for', level, currentDataType);
+                return;
+            }
+            
+            console.log('Using CSV data for', level, currentDataType);
+            
+            // Update all cards with the data
+            const cards = cardConfigs[currentDataType];
+            cards.forEach(card => {
+                const element = document.getElementById(card.id);
+                if (element) {
+                    const valueElement = element.querySelector('.sidebar-value');
+                    if (valueElement) {
+                        const value = data[card.metric];
+                        if (value !== undefined && value !== null) {
+                            if (card.isPercent) {
+                                valueElement.textContent = value + '%';
+                            } else {
+                                valueElement.textContent = typeof value === 'number' ? Math.round(value).toLocaleString() : value;
+                            }
+                        } else {
+                            valueElement.textContent = '-';
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAllCharts() {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            // Update chart title
+            document.getElementById('chartTitle').textContent = `Monthly Trends - All Indicators (January-December ${currentTimePeriod})`;
+            
+            // Get monthly data from CSV
+            const monthlyData = getMonthlyCSVData(currentSelection, currentDataType);
+            
+            if (!monthlyData) {
+                console.warn('No monthly data available for charts');
+                return;
+            }
+            
+            // Render combined rates chart
+            renderMultiLine('combinedRates', 
+                months,
+                [
+                    {
+                        label: 'Reporting Rate',
+                        data: monthlyData.reporting,
+                        color: '#2c6693'
+                    },
+                    {
+                        label: 'Testing Rate',
+                        data: monthlyData.testing,
+                        color: '#4a90c4'
+                    },
+                    {
+                        label: 'Test Positivity Rate',
+                        data: monthlyData.positivity,
+                        color: '#d32f2f'
+                    },
+                    {
+                        label: 'Treatment Rate',
+                        data: monthlyData.treatment,
+                        color: '#2e7d32'
+                    }
+                ],
+                true,
+                'top'
+            );
+            
+            // Combined trends chart
+            let datasets = [
+                {
+                    label: 'Suspected Cases',
+                    data: monthlyData.suspected,
+                    color: '#fbbf24'
+                },
+                {
+                    label: 'Tests Performed',
+                    data: monthlyData.tests,
+                    color: '#2c6693'
+                },
+                {
+                    label: 'Confirmed Cases',
+                    data: monthlyData.confirmed,
+                    color: '#d32f2f'
+                },
+                {
+                    label: 'Treated Cases',
+                    data: monthlyData.treated,
+                    color: '#2e7d32'
+                },
+                {
+                    label: 'Presumed Cases',
+                    data: monthlyData.presumed,
+                    color: '#9c27b0'
+                }
+            ];
+            
+            // Filter datasets based on active card filter
+            if (activeCardFilter) {
+                const filterMap = {
+                    'suspected': 'Suspected Cases',
+                    'tests': 'Tests Performed',
+                    'confirmed': 'Confirmed Cases',
+                    'treated': 'Treated Cases',
+                    'presumed': 'Presumed Cases'
+                };
+                const targetLabel = filterMap[activeCardFilter];
+                if (targetLabel) {
+                    datasets = datasets.filter(ds => ds.label === targetLabel);
+                }
+            }
+            
+            renderMultiLine('trendCombined',
+                months,
+                datasets,
+                false,
+                'top'
+            );
+        }
+
+        function renderMultiLine(id, labels, datasets, isPercentage = false, legendPosition = 'top') {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            const chartDatasets = datasets.map(ds => ({
+                label: ds.label,
+                data: ds.data,
+                borderColor: ds.color,
+                backgroundColor: ds.color + '20',
+                tension: 0.4,
+                fill: false,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: chartDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            position: legendPosition,
+                            align: 'center',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 12,
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                },
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    return datasets.map((dataset, i) => ({
+                                        text: dataset.label,
+                                        fillStyle: dataset.borderColor,
+                                        strokeStyle: dataset.borderColor,
+                                        lineWidth: 2,
+                                        hidden: !chart.isDatasetVisible(i),
+                                        index: i,
+                                        pointStyle: 'circle'
+                                    }));
+                                }
+                            },
+                            onClick: function(e, legendItem, legend) {
+                                const index = legendItem.index;
+                                const chart = legend.chart;
+                                const clickedLabel = chart.data.datasets[index].label;
+                                
+                                // Toggle filter: if same label clicked, clear filter; otherwise set new filter
+                                if (legendFilter === clickedLabel) {
+                                    legendFilter = null;
+                                } else {
+                                    legendFilter = clickedLabel;
+                                }
+                                
+                                // Update all datasets visibility based on filter
+                                chart.data.datasets.forEach((dataset, i) => {
+                                    if (legendFilter === null) {
+                                        // No filter: show all
+                                        chart.setDatasetVisibility(i, true);
+                                    } else {
+                                        // Filter active: show only matching dataset
+                                        chart.setDatasetVisibility(i, dataset.label === legendFilter);
+                                    }
+                                });
+                                
+                                chart.update();
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: function(context) {
+                                    const suffix = isPercentage ? '%' : '';
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: isPercentage ? 100 : undefined,
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 8,
+                                callback: function(value) {
+                                    return isPercentage ? value + '%' : value.toLocaleString();
+                                }
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 5,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLine(id, label, labels, data, color) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 8
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 5,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initDashboard);
+    </script>
 </body>
 </html>
