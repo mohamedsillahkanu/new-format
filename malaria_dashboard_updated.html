@@ -1,0 +1,2274 @@
+<!DOCTYPE html>   
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title-section {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .header-filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-filter-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .header-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c6693;
+            cursor: pointer;
+            min-width: 180px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c6693' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        .header-select:hover {
+            background: white;
+        }
+
+        .header-select:focus {
+            outline: none;
+            border-color: white;
+        }
+
+        .filter-indicator {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid #fbbf24;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .filter-indicator.active {
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .header-reset-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .header-reset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 340px 1.2fr 1.2fr 250px;
+            gap: 5px;
+            max-width: 1900px;
+            margin: 20px auto;
+            padding: 0 20px 20px 20px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            height: calc(100vh - 160px);
+            padding-right: 8px;
+        }
+
+        .sidebar-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            grid-auto-rows: 1fr;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .sidebar-card.active {
+            background: linear-gradient(135deg, #2c6693 0%, #1f4a6a 100%);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.3);
+        }
+
+        .sidebar-card.active .sidebar-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sidebar-card.active .sidebar-value {
+            color: white;
+        }
+
+        .sidebar-card.active .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .sidebar-card.active::before {
+            height: 6px;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .left-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .left-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .geo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .geo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 102, 147, 0.15);
+        }
+
+        .geo-card.active {
+            background: #2c6693;
+            color: white;
+            font-weight: 700;
+        }
+
+        .geo-card-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .geo-card-name {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .geo-card-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .geo-stat {
+            flex: 1;
+        }
+
+        .geo-stat-label {
+            font-size: 9px;
+            font-weight: 600;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .geo-stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        .geo-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+        }
+
+        .geo-select:focus {
+            outline: none;
+            border-color: #2c6693;
+        }
+
+        .middle-column {
+            display: contents;
+            gap: 5px;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+        }
+
+        .indicator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 102, 147, 0.15);
+        }
+
+        .indicator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c6693, #4a90c4);
+        }
+
+        .indicator-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #2c6693;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .indicator-subtitle {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 160px);
+            min-height: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #2c6693;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #2c6693;
+            text-transform: uppercase;
+        }
+
+        .mini-charts {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .mini-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .mini-chart-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            height: 100%;
+            min-height: 0;
+            position: relative;
+            flex: 1;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            grid-column: 3;
+        }
+
+        .right-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-column::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .right-column::-webkit-scrollbar-thumb {
+            background: #2c6693;
+            border-radius: 10px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monthly-incidence-grid {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+            grid-column: 4;
+        }
+
+        .monthly-incidence-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 5px;
+            flex: 1;
+        }
+
+        .month-box {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .month-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .month-name {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .month-value {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .incidence-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .incidence-moderate {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .incidence-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .incidence-very-high {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #2c6693;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-large {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        .reset-btn {
+            background: #2c6693;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background: #1f4a6a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .indicators-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .right-column {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .indicators-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title-section">
+                <h1 style="font-size: 28px; font-weight: 900;">Malaria</h1>
+                <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">Comprehensive Surveillance & Treatment Monitoring</div>
+            </div>
+            
+            <div class="header-filters">
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Data Type</label>
+                    <select class="header-select" id="dataTypeSelect" onchange="handleDataTypeChange()">
+                        <option value="surveillance" selected>Surveillance</option>
+                        <option value="intervention">Routine Intervention</option>
+                        <option value="stockout">Stockout</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Time Period</label>
+                    <select class="header-select" id="timePeriodSelect" onchange="handleTimePeriodChange()">
+                        <option value="2024" selected>January 2024 - December 2024</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">District</label>
+                    <select class="header-select" id="headerDistrictSelect" onchange="handleHeaderDistrictChange()">
+                        <option value="" selected>All Districts (National)</option>
+                    </select>
+                </div>
+                
+                <div class="header-filter-group">
+                    <label class="header-filter-label">Chiefdom</label>
+                    <select class="header-select" id="headerChiefdomSelect" onchange="handleHeaderChiefdomChange()" disabled>
+                        <option value="">Select District First</option>
+                    </select>
+                </div>
+                
+                <button class="header-reset-btn" onclick="resetSelection()">Reset</button>
+                
+                <div style="background: rgba(46, 125, 50, 0.8); color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+                    📊 Data Source: CSV
+                </div>
+                
+                <div class="filter-indicator" id="filterIndicator">
+                    📊 Filtering Active
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-column">
+            <div class="sidebar-cards-grid" id="sidebarCardsGrid">
+                <!-- Cards will be dynamically populated based on data type -->
+            </div>
+        </div>
+
+        <div class="middle-column">
+            <div class="charts-section">
+                <div class="section-title">Key Performance Rates</div>
+                <div class="mini-charts">
+                    <div class="mini-chart">
+                        <div class="mini-chart-title">All Performance Metrics</div>
+                        <div class="chart-container"><canvas id="combinedRates"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="chart-card">
+                <div class="chart-title" id="chartTitle">Monthly Trends - All Indicators (January-December 2024)</div>
+                <div class="chart-large"><canvas id="trendCombined"></canvas></div>
+            </div>
+        </div>
+
+        <div class="monthly-incidence-grid">
+            <div class="monthly-incidence-title" id="monthlyIncidenceTitle">Monthly Incidence Rate</div>
+            <div class="months-grid" id="monthsGrid"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        // ============================================================================
+        // MALARIA DASHBOARD - CSV-BASED (NO CALCULATIONS)
+        // ============================================================================
+        // This dashboard reads ALL data from a CSV file - it does NOT calculate
+        // anything. All metrics (TPR, Incidence, Testing Rate, etc.) must be
+        // pre-calculated in your CSV file.
+        //
+        // QUICK MODIFICATION GUIDE:
+        // 
+        // 1. TO CHANGE CARD LABELS/METRICS:
+        //    - See "CARD CONFIGURATIONS FOR DIFFERENT DATA TYPES" section below
+        //    - Three data types: 'surveillance', 'intervention', 'stockout'
+        //    - Each has its own array of card objects
+        //
+        // 2. TO ADD NEW METRICS:
+        //    - Add to "DATA AGGREGATION OBJECT" section (around line 957)
+        //    - Add to "READING DATA FROM CSV" loop (around line 999)
+        //    - Add to card configs for the relevant data type
+        //
+        // 3. TO CHANGE CSV COLUMN NAMES:
+        //    - See "READING DATA FROM CSV" section for all CSV column references
+        //    - Update the row.ColumnName references to match your CSV
+        //
+        // 4. SPECIAL NOTES:
+        //    - 'incidence' metric changes meaning by data type:
+        //      * Surveillance: Shows "Crude Incidence" (per 1000)
+        //      * Routine Intervention: Shows "% of Routine LLINs"
+        //      * Stockout: Shows "Stockout Rate %"
+        //    - All displayed with appropriate labels in the card configs
+        // ============================================================================
+
+        // ============================================================================
+        // ⭐⭐⭐ USER MODIFICATION SECTION - CHARTS CONFIGURATION ⭐⭐⭐
+        // ============================================================================
+        // EASY CUSTOMIZATION: Each Data Type now has its own chart configuration!
+        // The charts will automatically change when you select a different Data Type
+        // 
+        // Simply modify the metrics for each data type below.
+        // 
+        // IMPORTANT: The 'dataKey' must match a property in monthlyData object
+        // Available dataKeys: suspected, tests, confirmed, treated, presumed,
+        //                     positivity, testing, treatment, reporting
+        // ============================================================================
+        
+        const USER_CHART_CONFIG = {
+            
+            // ========================================================================
+            // SURVEILLANCE DATA TYPE - Charts Configuration
+            // ========================================================================
+            surveillance: {
+                leftChart: {
+                    title: 'Key Performance Rates',
+                    metrics: [
+                        {
+                            label: 'Reporting Rate',
+                            dataKey: 'reporting',
+                            color: '#2c6693',
+                            csvColumn: 'Reporting_Rate'
+                        },
+                        {
+                            label: 'Testing Rate',
+                            dataKey: 'testing',
+                            color: '#4a90c4',
+                            csvColumn: 'Testing_Rate'
+                        },
+                        {
+                            label: 'Test Positivity Rate',
+                            dataKey: 'positivity',
+                            color: '#d32f2f',
+                            csvColumn: 'Test_Positivity_Rate'
+                        },
+                        {
+                            label: 'Treatment Rate',
+                            dataKey: 'treatment',
+                            color: '#2e7d32',
+                            csvColumn: 'Treatment_Rate'
+                        }
+                    ],
+                    showAsPercentage: true
+                },
+                
+                rightChart: {
+                    title: 'Monthly Trends - All Indicators',
+                    metrics: [
+                        {
+                            label: 'Suspected Cases',
+                            dataKey: 'suspected',
+                            color: '#fbbf24',
+                            csvColumn: 'Suspected_Cases'
+                        },
+                        {
+                            label: 'Tests Performed',
+                            dataKey: 'tests',
+                            color: '#2c6693',
+                            csvColumn: 'Tests_Performed'
+                        },
+                        {
+                            label: 'Confirmed Cases',
+                            dataKey: 'confirmed',
+                            color: '#d32f2f',
+                            csvColumn: 'Confirmed_Cases'
+                        },
+                        {
+                            label: 'Treated Cases',
+                            dataKey: 'treated',
+                            color: '#2e7d32',
+                            csvColumn: 'Treated_Cases'
+                        },
+                        {
+                            label: 'Presumed Cases',
+                            dataKey: 'presumed',
+                            color: '#9c27b0',
+                            csvColumn: 'Presumed_Cases'
+                        }
+                    ],
+                    showAsPercentage: false
+                }
+            },
+            
+            // ========================================================================
+            // INTERVENTION (ROUTINE) DATA TYPE - Charts Configuration
+            // ========================================================================
+            intervention: {
+                leftChart: {
+                    title: 'EPI & ANC Platform - ITN Distribution',
+                    metrics: [
+                        {
+                            label: 'Pentavalent 1st Dose',
+                            dataKey: 'penta1',
+                            color: '#2c6693',
+                            csvColumn: 'Pentavalent_1st_dose'
+                        },
+                        {
+                            label: 'Pentavalent 3rd Dose',
+                            dataKey: 'penta3',
+                            color: '#4a90c4',
+                            csvColumn: 'Pentavalent_3rd_dose'
+                        },
+                        {
+                            label: 'LLITN at Penta3',
+                            dataKey: 'llinPenta3',
+                            color: '#f57c00',
+                            csvColumn: 'LLITN_given_at_Pentavalent_3rd_dose'
+                        },
+                        {
+                            label: 'LLITN at ANC',
+                            dataKey: 'llinAnc',
+                            color: '#2e7d32',
+                            csvColumn: 'Antenatal_client_given_LLITN'
+                        }
+                    ],
+                    showAsPercentage: false
+                },
+                
+                rightChart: {
+                    title: 'Malaria Vaccine & IPT Coverage',
+                    metrics: [
+                        {
+                            label: 'Malaria Vaccine 1st',
+                            dataKey: 'vaccine1',
+                            color: '#1976d2',
+                            csvColumn: 'Malaria_Vaccine_1st_dose'
+                        },
+                        {
+                            label: 'Malaria Vaccine 2nd',
+                            dataKey: 'vaccine2',
+                            color: '#42a5f5',
+                            csvColumn: 'Malaria_Vaccine_2nd_dose'
+                        },
+                        {
+                            label: 'Malaria Vaccine 3rd',
+                            dataKey: 'vaccine3',
+                            color: '#90caf9',
+                            csvColumn: 'Malaria_Vaccine_3rd_dose'
+                        },
+                        {
+                            label: 'IPTp 1st Dose',
+                            dataKey: 'iptp1',
+                            color: '#d32f2f',
+                            csvColumn: 'Antenatal_client_IPT_1st_dose'
+                        },
+                        {
+                            label: 'IPTp 2nd Dose',
+                            dataKey: 'iptp2',
+                            color: '#f44336',
+                            csvColumn: 'Antenatal_client_IPT_2nd_dose'
+                        },
+                        {
+                            label: 'IPTp 3rd Dose',
+                            dataKey: 'iptp3',
+                            color: '#e57373',
+                            csvColumn: 'Antenatal_client_IPT_3rd_dose'
+                        }
+                    ],
+                    showAsPercentage: false
+                }
+            },
+            
+            // ========================================================================
+            // STOCKOUT DATA TYPE - Charts Configuration
+            // ========================================================================
+            stockout: {
+                leftChart: {
+                    title: 'ACT Formulations Stockout Rates',
+                    metrics: [
+                        {
+                            label: 'ACT 6 Tabs',
+                            dataKey: 'act6',
+                            color: '#d32f2f',
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout'
+                        },
+                        {
+                            label: 'ACT 12 Tabs',
+                            dataKey: 'act12',
+                            color: '#f44336',
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout'
+                        },
+                        {
+                            label: 'ACT 18 Tabs',
+                            dataKey: 'act18',
+                            color: '#e57373',
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout'
+                        },
+                        {
+                            label: 'ACT 24 Tabs',
+                            dataKey: 'act24',
+                            color: '#ef5350',
+                            csvColumn: 'Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout'
+                        }
+                    ],
+                    showAsPercentage: true
+                },
+                
+                rightChart: {
+                    title: 'Injectable Antimalarials & RDT Stockout',
+                    metrics: [
+                        {
+                            label: 'Malaria RDT Kit',
+                            dataKey: 'rdtKit',
+                            color: '#2196f3',
+                            csvColumn: 'Malaria_Rapid_Diagnostic_Test_Kit_Stockout'
+                        },
+                        {
+                            label: 'Artemether 20mg Inj',
+                            dataKey: 'artemether20',
+                            color: '#d32f2f',
+                            csvColumn: 'Artemether_20mg_ml_Inj_Stockout'
+                        },
+                        {
+                            label: 'Artesunate 60mg Inj',
+                            dataKey: 'artesunate60',
+                            color: '#f44336',
+                            csvColumn: 'Artesunate_60mg_ml_Inj_Vial_Stockout'
+                        },
+                        {
+                            label: 'Artesunate 20mg Inj',
+                            dataKey: 'artesunate20',
+                            color: '#e57373',
+                            csvColumn: 'Artesunate_20mg_ml_Inj_Stockout'
+                        },
+                        {
+                            label: 'Artesunate 50mg Supp',
+                            dataKey: 'artesunate50',
+                            color: '#ff9800',
+                            csvColumn: 'Artesunate_50mg_Suppository_Stockout'
+                        }
+                    ],
+                    showAsPercentage: true
+                }
+            }
+        };
+        
+        // ============================================================================
+        // EXAMPLE CUSTOMIZATIONS FOR EACH DATA TYPE:
+        // ============================================================================
+        // 
+        // To change Surveillance charts:
+        // → Edit USER_CHART_CONFIG.surveillance.leftChart or rightChart
+        //
+        // To change Intervention charts:
+        // → Edit USER_CHART_CONFIG.intervention.leftChart or rightChart
+        //
+        // To change Stockout charts:
+        // → Edit USER_CHART_CONFIG.stockout.leftChart or rightChart
+        //
+        // Each data type is completely independent!
+        // ============================================================================
+        
+        let charts = {};
+        let currentSelection = 'national';
+        let legendFilter = null;
+        let currentTimePeriod = '2024';
+        let activeCardFilter = null;
+        let currentDataType = 'surveillance';
+
+        // ============================================================================
+        // CARD CONFIGURATIONS FOR DIFFERENT DATA TYPES
+        // ============================================================================
+        // Each data type section defines the indicators/cards shown in the left sidebar
+        // To modify: Change 'label' for display text, 'subtitle' for description, 
+        // 'metric' must match CSV column names, add 'isPercent: true' to show %
+        // ============================================================================
+        
+        const cardConfigs = {
+            
+            // ========================================================================
+            // DATA TYPE: SURVEILLANCE
+            // ========================================================================
+            // Core malaria case surveillance metrics from health facilities
+            // CSV Columns Used: OPD_Visits, Suspected_Cases, Tests_Performed, 
+            //                   Confirmed_Cases, Treated_Cases, Admissions, Deaths,
+            //                   Test_Positivity_Rate, Reporting_Rate, Testing_Rate,
+            //                   Treatment_Rate, Incidence_Per_1000, Presumed_Cases,
+            //                   Case_Fatality_Rate
+            // ========================================================================
+            'surveillance': [
+                // Basic Case Metrics
+                { id: 'sideIndOPD', label: 'Total OPD Visits', subtitle: 'All age groups', metric: 'opd' },
+                { id: 'sideIndSuspected', label: 'Suspected Cases', subtitle: 'Facility & Community', metric: 'suspected' },
+                { id: 'sideIndTests', label: 'Total Tests', subtitle: 'Microscopy & RDT', metric: 'tests' },
+                { id: 'sideIndConfirmed', label: 'Confirmed Cases', subtitle: 'Positive results', metric: 'confirmed' },
+                { id: 'sideIndTreated', label: 'Treated Cases', subtitle: 'ACT treatment', metric: 'treated' },
+                { id: 'sideIndAdmissions', label: 'Admissions', subtitle: 'Malaria admissions', metric: 'admissions' },
+                { id: 'sideIndDeaths', label: 'Deaths', subtitle: 'Malaria-related', metric: 'deaths', color: '#d32f2f' },
+                
+                // Quality & Performance Indicators (from CSV - not calculated)
+                { id: 'sideIndPositivity', label: 'Test Positivity', subtitle: 'Confirmed / Tested', metric: 'positivity', isPercent: true },
+                { id: 'sideIndReportingRate', label: 'Reporting Rate', subtitle: 'Facilities reporting', metric: 'reporting', isPercent: true },
+                { id: 'sideIndTestingRate', label: 'Testing Rate', subtitle: 'Suspected tested', metric: 'testing', isPercent: true },
+                { id: 'sideIndTreatmentRate', label: 'Treatment Rate', subtitle: 'Confirmed treated', metric: 'treatment', isPercent: true },
+                
+                // Epidemiological Indicators
+                { id: 'sideIndIncidence', label: 'Crude Incidence', subtitle: 'Per 1,000 population', metric: 'incidence' },
+                { id: 'sideIndPresumed', label: 'Presumed Cases', subtitle: 'Treated without test', metric: 'presumed' },
+                { id: 'sideIndCaseFatality', label: 'Case Fatality', subtitle: 'Deaths / Confirmed', metric: 'fatality', isPercent: true }
+            ],
+            
+            // ========================================================================
+            // DATA TYPE: INTERVENTION (ROUTINE)
+            // ========================================================================
+            // Prevention and control intervention coverage metrics from EPI and ANC
+            // New variables: Pentavalent doses, Malaria vaccine doses, IPTi doses,
+            //                ANC visits, IPTp doses, LLITN distribution, Vitamin A
+            // ========================================================================
+            'intervention': [
+                // EPI - Pentavalent & LLITN
+                { id: 'sideIndPenta1', label: 'Pentavalent 1st Dose', subtitle: 'Immunization', metric: 'penta1' },
+                { id: 'sideIndPenta3', label: 'Pentavalent 3rd Dose', subtitle: 'Immunization', metric: 'penta3' },
+                { id: 'sideIndLLINPenta3', label: 'LLITN at Penta3', subtitle: 'ITN distribution', metric: 'llinPenta3' },
+                
+                // Malaria Vaccine Doses
+                { id: 'sideIndVaccine1', label: 'Malaria Vaccine 1st', subtitle: 'Dose 1', metric: 'vaccine1' },
+                { id: 'sideIndVaccine2', label: 'Malaria Vaccine 2nd', subtitle: 'Dose 2', metric: 'vaccine2' },
+                { id: 'sideIndVaccine3', label: 'Malaria Vaccine 3rd', subtitle: 'Dose 3', metric: 'vaccine3' },
+                { id: 'sideIndVaccine4', label: 'Malaria Vaccine 4th', subtitle: 'Dose 4', metric: 'vaccine4' },
+                
+                // IPTi - Infant Prophylaxis
+                { id: 'sideIndIPTi1', label: 'IPTi 1st Dose', subtitle: 'Infant prophylaxis', metric: 'ipti1' },
+                { id: 'sideIndIPTi2', label: 'IPTi 2nd Dose', subtitle: 'Infant prophylaxis', metric: 'ipti2' },
+                { id: 'sideIndIPTi3', label: 'IPTi 3rd Dose', subtitle: 'Infant prophylaxis', metric: 'ipti3' },
+                
+                // ANC Visits
+                { id: 'sideIndANC1', label: 'ANC 1st Visit', subtitle: 'Antenatal care', metric: 'anc1' },
+                { id: 'sideIndANC4', label: 'ANC 4th Visit', subtitle: 'Antenatal care', metric: 'anc4' },
+                { id: 'sideIndANC8', label: 'ANC 8th Visit', subtitle: 'Antenatal care', metric: 'anc8' },
+                
+                // IPTp - Pregnancy Prophylaxis
+                { id: 'sideIndIPTp1', label: 'IPTp 1st Dose', subtitle: 'Pregnancy prophylaxis', metric: 'iptp1' },
+                { id: 'sideIndIPTp2', label: 'IPTp 2nd Dose', subtitle: 'Pregnancy prophylaxis', metric: 'iptp2' },
+                { id: 'sideIndIPTp3', label: 'IPTp 3rd Dose', subtitle: 'Pregnancy prophylaxis', metric: 'iptp3' },
+                
+                // LLITN at ANC
+                { id: 'sideIndLLINANC', label: 'LLITN at ANC', subtitle: 'ITN distribution', metric: 'llinAnc' },
+                
+                // Vitamin A Supplementation
+                { id: 'sideIndVitA6', label: 'Vitamin A 6-11m', subtitle: 'Supplement', metric: 'vitA6' },
+                { id: 'sideIndVitA12', label: 'Vitamin A 12-59m', subtitle: 'Supplement', metric: 'vitA12' }
+            ],
+            
+            // ========================================================================
+            // DATA TYPE: STOCKOUT
+            // ========================================================================
+            // Commodity stockout tracking for essential malaria medicines and diagnostics
+            // 10 commodities: Injectable antimalarials, suppositories, RDTs, SP, ACTs
+            // ========================================================================
+            'stockout': [
+                // Injectable Antimalarials
+                { id: 'sideIndArtemether20', label: 'Artemether 20mg/ml Inj', subtitle: 'Stockout %', metric: 'artemether20', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndArtesunate50', label: 'Artesunate 50mg Supp', subtitle: 'Stockout %', metric: 'artesunate50', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndArtesunate60', label: 'Artesunate 60mg/ml Inj', subtitle: 'Stockout %', metric: 'artesunate60', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndArtesunate20', label: 'Artesunate 20mg/ml Inj', subtitle: 'Stockout %', metric: 'artesunate20', isPercent: true, color: '#d32f2f' },
+                
+                // Diagnostics
+                { id: 'sideIndRDT', label: 'Malaria RDT Kit', subtitle: 'Stockout %', metric: 'rdtKit', isPercent: true, color: '#d32f2f' },
+                
+                // Antimalarial Tablets
+                { id: 'sideIndSP', label: 'SP 500mg/25mg Tab', subtitle: 'Stockout %', metric: 'sp', isPercent: true, color: '#d32f2f' },
+                
+                // ACT - Different Pack Sizes
+                { id: 'sideIndACT6', label: 'ACT 20mg/120mg - 6 Tabs', subtitle: 'Stockout %', metric: 'act6', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACT12', label: 'ACT 20mg/120mg - 12 Tabs', subtitle: 'Stockout %', metric: 'act12', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACT18', label: 'ACT 20mg/120mg - 18 Tabs', subtitle: 'Stockout %', metric: 'act18', isPercent: true, color: '#d32f2f' },
+                { id: 'sideIndACT24', label: 'ACT 20mg/120mg - 24 Tabs', subtitle: 'Stockout %', metric: 'act24', isPercent: true, color: '#d32f2f' }
+            ]
+        };
+        // ============================================================================
+        // END OF CARD CONFIGURATIONS
+        // ============================================================================
+
+        // Data variations for different districts and time periods
+        // Data will be loaded from CSV file
+        let csvData = [];
+        let rawCSVData = [];
+        
+        // Load CSV data on page load
+        async function loadCSVData() {
+            console.log('🔄 Starting CSV load...');
+            try {
+                const response = await fetch('malaria_data_template.csv');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                console.log('📄 CSV file fetched, size:', csvText.length, 'characters');
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    transformHeader: function(header) {
+                        return header.trim();
+                    },
+                    complete: function(results) {
+                        rawCSVData = results.data.filter(row => row.District && row.Month && row.DataType);
+                        console.log('✅ CSV data loaded:', rawCSVData.length, 'rows');
+                        console.log('📊 Sample row:', rawCSVData[0]);
+                        
+                        if (rawCSVData.length === 0) {
+                            alert('⚠️ CSV file is empty or has no valid data rows. Please check your CSV file has data below the header row.');
+                            return;
+                        }
+                        
+                        processCSVData();
+                        initializeDashboard();
+                    },
+                    error: function(error) {
+                        console.error('❌ Error parsing CSV:', error);
+                        alert('Error loading CSV data: ' + error.message + '\n\nPlease check:\n1. File is named: malaria_data_template.csv\n2. File is in the same folder as this HTML\n3. File has the correct format');
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error loading CSV:', error);
+                alert('Error loading CSV file: ' + error.message + '\n\nPlease ensure:\n1. malaria_data_template.csv is in the same folder as this HTML file\n2. You are opening this file through a web server or allowing local file access\n3. The CSV file is properly formatted');
+            }
+        }
+        
+        // Process CSV data into usable format
+        function processCSVData() {
+            csvData = rawCSVData;
+            console.log('Processed CSV data ready');
+        }
+        
+        // Call CSV loader on page load
+        window.addEventListener('load', loadCSVData);
+
+
+        // Chiefdoms will be populated from CSV data
+        let chiefdomsData = {};
+        
+        function extractChiefdomsFromCSV() {
+            chiefdomsData = {};
+            rawCSVData.forEach(row => {
+                if (row.District && row.Chiefdom) {
+                    if (!chiefdomsData[row.District]) {
+                        chiefdomsData[row.District] = [];
+                    }
+                    if (!chiefdomsData[row.District].includes(row.Chiefdom)) {
+                        chiefdomsData[row.District].push(row.Chiefdom);
+                    }
+                }
+            });
+            console.log('Chiefdoms extracted from CSV:', JSON.stringify(chiefdomsData, null, 2));
+        }
+
+        function initializeDashboard() {
+            extractChiefdomsFromCSV();
+            populateDistrictDropdown();
+            initDashboard();
+        }
+        
+        // Populate district dropdown from CSV
+        function populateDistrictDropdown() {
+            const districtSelect = document.getElementById('headerDistrictSelect');
+            // Clear existing options except "All Districts"
+            while (districtSelect.options.length > 1) {
+                districtSelect.remove(1);
+            }
+            
+            const districts = Object.keys(chiefdomsData).sort();
+            districts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+            
+            // Ensure first option displays properly
+            if (districtSelect.options.length > 0) {
+                districtSelect.options[0].textContent = 'All Districts (National)';
+            }
+        }
+        
+        // Get data from CSV for specific level and data type
+        function getCSVDataForLevel(level, dataType) {
+            console.log('🔍 Getting CSV data for:', level, dataType, 'Year:', currentTimePeriod);
+            
+            if (!rawCSVData || rawCSVData.length === 0) {
+                console.error('❌ No CSV data available in rawCSVData');
+                return null;
+            }
+            
+            console.log('📊 Total CSV rows available:', rawCSVData.length);
+            
+            // Filter by data type
+            let filteredData = rawCSVData.filter(row => row.DataType === dataType);
+            console.log('📋 Rows matching DataType', dataType + ':', filteredData.length);
+            
+            // Filter by level (district/chiefdom or national)
+            if (level !== 'national') {
+                // Check if it's a chiefdom (contains comma like "District,Chiefdom")
+                if (level.includes(',')) {
+                    const [district, chiefdom] = level.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                    console.log('🏘️ Rows for chiefdom', chiefdom + ':', filteredData.length);
+                } else {
+                    // It's a district
+                    filteredData = filteredData.filter(row => row.District === level);
+                    console.log('🏙️ Rows for district', level + ':', filteredData.length);
+                }
+            } else {
+                console.log('🌍 Using all districts (national level)');
+            }
+            
+            // Filter by time period (year)
+            filteredData = filteredData.filter(row => row.Year == currentTimePeriod);
+            console.log('📅 Rows for year', currentTimePeriod + ':', filteredData.length);
+            
+            if (filteredData.length === 0) {
+                console.warn('⚠️ No data found for', level, dataType, currentTimePeriod);
+                return null;
+            }
+            
+            // ========================================================================
+            // DATA AGGREGATION OBJECT
+            // ========================================================================
+            // This object accumulates values from CSV rows that match the filters
+            // All values are READ from CSV - NO CALCULATIONS are performed here
+            // To add a new metric: Add it here, then read it from CSV in the loop below
+            // ========================================================================
+            const aggregated = {
+                // BASIC CASE COUNTS (sum across all matching rows)
+                opd: 0,              // CSV: OPD_Visits
+                suspected: 0,        // CSV: Suspected_Cases
+                tests: 0,            // CSV: Tests_Performed
+                confirmed: 0,        // CSV: Confirmed_Cases
+                treated: 0,          // CSV: Treated_Cases
+                admissions: 0,       // CSV: Admissions
+                deaths: 0,           // CSV: Deaths
+                presumed: 0,         // CSV: Presumed_Cases
+                population: 0,       // CSV: Population (takes max value)
+                reporting: 0,        // CSV: Reporting_Rate (average)
+                
+                // CALCULATED METRICS (read from CSV - already calculated)
+                positivity: 0,       // CSV: Test_Positivity_Rate (average)
+                testing: 0,          // CSV: Testing_Rate (average)
+                treatment: 0,        // CSV: Treatment_Rate (average)
+                fatality: 0,         // CSV: Case_Fatality_Rate (average)
+                incidence: 0,        // CSV: Incidence_Per_1000 (average)
+                                     // NOTE: For Stockout = Stockout Rate %
+                                     // NOTE: For Routine = % of Routine LLINs
+                
+                // INTERVENTION METRICS (count/numbers - will be summed)
+                // EPI Metrics
+                penta1: 0,           // CSV: Pentavalent_1st_dose
+                penta3: 0,           // CSV: Pentavalent_3rd_dose
+                llinPenta3: 0,       // CSV: LLITN_given_at_Pentavalent_3rd_dose
+                
+                // Malaria Vaccine
+                vaccine1: 0,         // CSV: Malaria_Vaccine_1st_dose
+                vaccine2: 0,         // CSV: Malaria_Vaccine_2nd_dose
+                vaccine3: 0,         // CSV: Malaria_Vaccine_3rd_dose
+                vaccine4: 0,         // CSV: Malaria_Vaccine_4th_dose
+                
+                // IPTi
+                ipti1: 0,            // CSV: IPTi_1st_dose_given
+                ipti2: 0,            // CSV: IPTi_2nd_dose_given
+                ipti3: 0,            // CSV: IPTi_3rd_dose_given
+                
+                // ANC
+                anc1: 0,             // CSV: Antenatal_client_1st_visit
+                anc4: 0,             // CSV: Antenatal_client_4th_visit
+                anc8: 0,             // CSV: Antenatal_client_8th_visit
+                
+                // IPTp
+                iptp1: 0,            // CSV: Antenatal_client_IPT_1st_dose
+                iptp2: 0,            // CSV: Antenatal_client_IPT_2nd_dose
+                iptp3: 0,            // CSV: Antenatal_client_IPT_3rd_dose
+                
+                // LLITN & Vitamin A
+                llinAnc: 0,          // CSV: Antenatal_client_given_LLITN
+                vitA6: 0,            // CSV: Vitamin_A_supplement_6_11_months
+                vitA12: 0,           // CSV: Vitamin_A_supplement_12_59_months
+                
+                // STOCKOUT METRICS (percentage - will be averaged)
+                artemether20: 0,     // CSV: Artemether_20mg_ml_Inj_Stockout
+                artesunate50: 0,     // CSV: Artesunate_50mg_Suppository_Stockout
+                artesunate60: 0,     // CSV: Artesunate_60mg_ml_Inj_Vial_Stockout
+                artesunate20: 0,     // CSV: Artesunate_20mg_ml_Inj_Stockout
+                rdtKit: 0,           // CSV: Malaria_Rapid_Diagnostic_Test_Kit_Stockout
+                sp: 0,               // CSV: Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout
+                act6: 0,             // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout
+                act12: 0,            // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout
+                act18: 0,            // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout
+                act24: 0             // CSV: Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout
+            };
+            
+            let reportingCount = 0;
+            let interventionCount = 0;
+            let stockoutCount = 0;
+            let calculatedCount = 0;
+            
+            // ========================================================================
+            // READING DATA FROM CSV
+            // ========================================================================
+            // Loop through all filtered CSV rows and accumulate values
+            // NO CALCULATIONS - just reading and summing values from CSV columns
+            // ========================================================================
+            filteredData.forEach(row => {
+                // BASIC CASE COUNTS - Sum all values
+                aggregated.opd += row.OPD_Visits || 0;
+                aggregated.suspected += row.Suspected_Cases || 0;
+                aggregated.tests += row.Tests_Performed || 0;
+                aggregated.confirmed += row.Confirmed_Cases || 0;
+                aggregated.treated += row.Treated_Cases || 0;
+                aggregated.admissions += row.Admissions || 0;
+                aggregated.deaths += row.Deaths || 0;
+                aggregated.presumed += row.Presumed_Cases || 0;
+                
+                // POPULATION - Take the maximum value
+                if (row.Population) aggregated.population = Math.max(aggregated.population, row.Population);
+                
+                // REPORTING RATE - Will be averaged later
+                if (row.Reporting_Rate) {
+                    aggregated.reporting += parseFloat(row.Reporting_Rate) || 0;
+                    reportingCount++;
+                }
+                
+                // ====================================================================
+                // CALCULATED METRICS - Read directly from CSV (already calculated)
+                // ====================================================================
+                if (row.Test_Positivity_Rate !== undefined && row.Test_Positivity_Rate !== null && row.Test_Positivity_Rate !== '') {
+                    aggregated.positivity += parseFloat(row.Test_Positivity_Rate) || 0;
+                    calculatedCount++;
+                }
+                if (row.Testing_Rate) aggregated.testing += parseFloat(row.Testing_Rate) || 0;
+                if (row.Treatment_Rate) aggregated.treatment += parseFloat(row.Treatment_Rate) || 0;
+                if (row.Case_Fatality_Rate) aggregated.fatality += parseFloat(row.Case_Fatality_Rate) || 0;
+                
+                // INCIDENCE - This value means different things for different data types:
+                // - Surveillance: Incidence per 1000 population
+                // - Routine Intervention: % of Routine LLINs
+                // - Stockout: Stockout Rate %
+                if (row.Incidence_Per_1000) aggregated.incidence += parseFloat(row.Incidence_Per_1000) || 0;
+                
+                // UNTREATED CASES - Sum (due to stockouts)
+                if (row.Untreated_Cases) aggregated.untreated += parseFloat(row.Untreated_Cases) || 0;
+                
+                // ====================================================================
+                // INTERVENTION METRICS - Sum all values (these are counts)
+                // ====================================================================
+                // EPI Metrics
+                if (row.Pentavalent_1st_dose) {
+                    aggregated.penta1 += row.Pentavalent_1st_dose || 0;
+                    interventionCount++;
+                }
+                if (row.Pentavalent_3rd_dose) aggregated.penta3 += row.Pentavalent_3rd_dose || 0;
+                if (row.LLITN_given_at_Pentavalent_3rd_dose) aggregated.llinPenta3 += row.LLITN_given_at_Pentavalent_3rd_dose || 0;
+                
+                // Malaria Vaccine
+                if (row.Malaria_Vaccine_1st_dose) aggregated.vaccine1 += row.Malaria_Vaccine_1st_dose || 0;
+                if (row.Malaria_Vaccine_2nd_dose) aggregated.vaccine2 += row.Malaria_Vaccine_2nd_dose || 0;
+                if (row.Malaria_Vaccine_3rd_dose) aggregated.vaccine3 += row.Malaria_Vaccine_3rd_dose || 0;
+                if (row.Malaria_Vaccine_4th_dose) aggregated.vaccine4 += row.Malaria_Vaccine_4th_dose || 0;
+                
+                // IPTi
+                if (row.IPTi_1st_dose_given) aggregated.ipti1 += row.IPTi_1st_dose_given || 0;
+                if (row.IPTi_2nd_dose_given) aggregated.ipti2 += row.IPTi_2nd_dose_given || 0;
+                if (row.IPTi_3rd_dose_given) aggregated.ipti3 += row.IPTi_3rd_dose_given || 0;
+                
+                // ANC
+                if (row.Antenatal_client_1st_visit) aggregated.anc1 += row.Antenatal_client_1st_visit || 0;
+                if (row.Antenatal_client_4th_visit) aggregated.anc4 += row.Antenatal_client_4th_visit || 0;
+                if (row.Antenatal_client_8th_visit) aggregated.anc8 += row.Antenatal_client_8th_visit || 0;
+                
+                // IPTp
+                if (row.Antenatal_client_IPT_1st_dose) aggregated.iptp1 += row.Antenatal_client_IPT_1st_dose || 0;
+                if (row.Antenatal_client_IPT_2nd_dose) aggregated.iptp2 += row.Antenatal_client_IPT_2nd_dose || 0;
+                if (row.Antenatal_client_IPT_3rd_dose) aggregated.iptp3 += row.Antenatal_client_IPT_3rd_dose || 0;
+                
+                // LLITN & Vitamin A
+                if (row.Antenatal_client_given_LLITN) aggregated.llinAnc += row.Antenatal_client_given_LLITN || 0;
+                if (row.Vitamin_A_supplement_6_11_months) aggregated.vitA6 += row.Vitamin_A_supplement_6_11_months || 0;
+                if (row.Vitamin_A_supplement_12_59_months) aggregated.vitA12 += row.Vitamin_A_supplement_12_59_months || 0;
+                
+                // ====================================================================
+                // STOCKOUT METRICS - Will be averaged later (these are percentages)
+                // ====================================================================
+                if (row.Artemether_20mg_ml_Inj_Stockout) {
+                    aggregated.artemether20 += parseFloat(row.Artemether_20mg_ml_Inj_Stockout) || 0;
+                    stockoutCount++;
+                }
+                if (row.Artesunate_50mg_Suppository_Stockout) aggregated.artesunate50 += parseFloat(row.Artesunate_50mg_Suppository_Stockout) || 0;
+                if (row.Artesunate_60mg_ml_Inj_Vial_Stockout) aggregated.artesunate60 += parseFloat(row.Artesunate_60mg_ml_Inj_Vial_Stockout) || 0;
+                if (row.Artesunate_20mg_ml_Inj_Stockout) aggregated.artesunate20 += parseFloat(row.Artesunate_20mg_ml_Inj_Stockout) || 0;
+                if (row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) aggregated.rdtKit += parseFloat(row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) || 0;
+                if (row.Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout) aggregated.sp += parseFloat(row.Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) aggregated.act6 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout) aggregated.act12 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout) aggregated.act18 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout) || 0;
+                if (row.Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout) aggregated.act24 += parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout) || 0;
+            });
+            
+            // ========================================================================
+            // CALCULATING AVERAGES FOR PERCENTAGE/RATE METRICS
+            // ========================================================================
+            // Some metrics are percentages that need to be averaged across rows
+            // NOTE: Intervention metrics are COUNTS, not percentages, so NOT averaged
+            // ========================================================================
+            
+            // Reporting Rate
+            if (reportingCount > 0) aggregated.reporting = (aggregated.reporting / reportingCount).toFixed(0);
+            
+            // Stockout Metrics (these are percentages - average them)
+            if (stockoutCount > 0) {
+                aggregated.artemether20 = (aggregated.artemether20 / stockoutCount).toFixed(1);
+                aggregated.artesunate50 = (aggregated.artesunate50 / stockoutCount).toFixed(1);
+                aggregated.artesunate60 = (aggregated.artesunate60 / stockoutCount).toFixed(1);
+                aggregated.artesunate20 = (aggregated.artesunate20 / stockoutCount).toFixed(1);
+                aggregated.rdtKit = (aggregated.rdtKit / stockoutCount).toFixed(1);
+                aggregated.sp = (aggregated.sp / stockoutCount).toFixed(1);
+                aggregated.act6 = (aggregated.act6 / stockoutCount).toFixed(1);
+                aggregated.act12 = (aggregated.act12 / stockoutCount).toFixed(1);
+                aggregated.act18 = (aggregated.act18 / stockoutCount).toFixed(1);
+                aggregated.act24 = (aggregated.act24 / stockoutCount).toFixed(1);
+            }
+            
+            // Average the calculated metrics from CSV (don't recalculate!)
+            if (calculatedCount > 0) {
+                aggregated.positivity = (aggregated.positivity / calculatedCount).toFixed(1);
+                aggregated.testing = (aggregated.testing / calculatedCount).toFixed(0);
+                aggregated.treatment = (aggregated.treatment / calculatedCount).toFixed(0);
+                aggregated.fatality = (aggregated.fatality / calculatedCount).toFixed(2);
+                aggregated.incidence = (aggregated.incidence / calculatedCount).toFixed(1);
+            }
+            // Untreated is already summed, don't average it
+            
+            return aggregated;
+        }
+        
+        // Get monthly data from CSV for charts
+        function getMonthlyCSVData(level, dataType) {
+            if (!rawCSVData || rawCSVData.length === 0) {
+                return null;
+            }
+            
+            const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            let filteredData = rawCSVData.filter(row => 
+                row.DataType === dataType && row.Year == currentTimePeriod
+            );
+            
+            // Filter by level
+            if (level !== 'national') {
+                if (level.includes(',')) {
+                    const [district, chiefdom] = level.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                } else {
+                    filteredData = filteredData.filter(row => row.District === level);
+                }
+            }
+            
+            const monthlyData = {
+                // Case counts
+                suspected: [],
+                tests: [],
+                confirmed: [],
+                treated: [],
+                presumed: [],
+                deaths: [],
+                
+                // Quality metrics
+                positivity: [],
+                testing: [],
+                treatment: [],
+                reporting: [],
+                
+                // Intervention metrics (EPI & ANC counts)
+                penta1: [],
+                penta3: [],
+                llinPenta3: [],
+                vaccine1: [],
+                vaccine2: [],
+                vaccine3: [],
+                vaccine4: [],
+                ipti1: [],
+                ipti2: [],
+                ipti3: [],
+                anc1: [],
+                anc4: [],
+                anc8: [],
+                iptp1: [],
+                iptp2: [],
+                iptp3: [],
+                llinAnc: [],
+                vitA6: [],
+                vitA12: [],
+                
+                // Stockout metrics (percentages)
+                artemether20: [],
+                artesunate50: [],
+                artesunate60: [],
+                artesunate20: [],
+                rdtKit: [],
+                sp: [],
+                act6: [],
+                act12: [],
+                act18: [],
+                act24: []
+            };
+            
+            monthOrder.forEach(month => {
+                const monthData = filteredData.filter(row => row.Month === month);
+                
+                if (monthData.length > 0) {
+                    // Case counts
+                    const suspected = monthData.reduce((sum, row) => sum + (row.Suspected_Cases || 0), 0);
+                    const tests = monthData.reduce((sum, row) => sum + (row.Tests_Performed || 0), 0);
+                    const confirmed = monthData.reduce((sum, row) => sum + (row.Confirmed_Cases || 0), 0);
+                    const treated = monthData.reduce((sum, row) => sum + (row.Treated_Cases || 0), 0);
+                    const presumed = monthData.reduce((sum, row) => sum + (row.Presumed_Cases || 0), 0);
+                    const deaths = monthData.reduce((sum, row) => sum + (row.Deaths || 0), 0);
+                    
+                    // Quality metrics (averaged)
+                    const reportingSum = monthData.reduce((sum, row) => sum + (row.Reporting_Rate || 0), 0);
+                    const positivitySum = monthData.reduce((sum, row) => sum + (parseFloat(row.Test_Positivity_Rate) || 0), 0);
+                    const testingSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Testing_Rate) || 0), 0);
+                    const treatmentSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Treatment_Rate) || 0), 0);
+                    
+                    // Intervention metrics (summed counts)
+                    const penta1 = monthData.reduce((sum, row) => sum + (row.Pentavalent_1st_dose || 0), 0);
+                    const penta3 = monthData.reduce((sum, row) => sum + (row.Pentavalent_3rd_dose || 0), 0);
+                    const llinPenta3 = monthData.reduce((sum, row) => sum + (row.LLITN_given_at_Pentavalent_3rd_dose || 0), 0);
+                    const vaccine1 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_1st_dose || 0), 0);
+                    const vaccine2 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_2nd_dose || 0), 0);
+                    const vaccine3 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_3rd_dose || 0), 0);
+                    const vaccine4 = monthData.reduce((sum, row) => sum + (row.Malaria_Vaccine_4th_dose || 0), 0);
+                    const ipti1 = monthData.reduce((sum, row) => sum + (row.IPTi_1st_dose_given || 0), 0);
+                    const ipti2 = monthData.reduce((sum, row) => sum + (row.IPTi_2nd_dose_given || 0), 0);
+                    const ipti3 = monthData.reduce((sum, row) => sum + (row.IPTi_3rd_dose_given || 0), 0);
+                    const anc1 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_1st_visit || 0), 0);
+                    const anc4 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_4th_visit || 0), 0);
+                    const anc8 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_8th_visit || 0), 0);
+                    const iptp1 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_IPT_1st_dose || 0), 0);
+                    const iptp2 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_IPT_2nd_dose || 0), 0);
+                    const iptp3 = monthData.reduce((sum, row) => sum + (row.Antenatal_client_IPT_3rd_dose || 0), 0);
+                    const llinAnc = monthData.reduce((sum, row) => sum + (row.Antenatal_client_given_LLITN || 0), 0);
+                    const vitA6 = monthData.reduce((sum, row) => sum + (row.Vitamin_A_supplement_6_11_months || 0), 0);
+                    const vitA12 = monthData.reduce((sum, row) => sum + (row.Vitamin_A_supplement_12_59_months || 0), 0);
+                    
+                    // Stockout metrics (averaged percentages)
+                    const artemether20Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_20mg_ml_Inj_Stockout) || 0), 0);
+                    const artesunate50Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artesunate_50mg_Suppository_Stockout) || 0), 0);
+                    const artesunate60Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artesunate_60mg_ml_Inj_Vial_Stockout) || 0), 0);
+                    const artesunate20Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artesunate_20mg_ml_Inj_Stockout) || 0), 0);
+                    const rdtKitSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) || 0), 0);
+                    const spSum = monthData.reduce((sum, row) => sum + (parseFloat(row.Sulphadoxine_Pyrimethamine_500mg_25mg_Tab_Stockout) || 0), 0);
+                    const act6Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) || 0), 0);
+                    const act12Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_12_Tabs_Stockout) || 0), 0);
+                    const act18Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_18_Tabs_Stockout) || 0), 0);
+                    const act24Sum = monthData.reduce((sum, row) => sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_24_Tabs_Stockout) || 0), 0);
+                    
+                    // Push case counts
+                    monthlyData.suspected.push(suspected);
+                    monthlyData.tests.push(tests);
+                    monthlyData.confirmed.push(confirmed);
+                    monthlyData.treated.push(treated);
+                    monthlyData.presumed.push(presumed);
+                    monthlyData.deaths.push(deaths);
+                    
+                    // Push quality metrics (averaged)
+                    monthlyData.positivity.push(monthData.length > 0 ? parseFloat((positivitySum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.testing.push(monthData.length > 0 ? parseFloat((testingSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.treatment.push(monthData.length > 0 ? parseFloat((treatmentSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.reporting.push(monthData.length > 0 ? parseFloat((reportingSum / monthData.length).toFixed(1)) : 0);
+                    
+                    // Push intervention metrics (summed counts - not averaged)
+                    monthlyData.penta1.push(penta1);
+                    monthlyData.penta3.push(penta3);
+                    monthlyData.llinPenta3.push(llinPenta3);
+                    monthlyData.vaccine1.push(vaccine1);
+                    monthlyData.vaccine2.push(vaccine2);
+                    monthlyData.vaccine3.push(vaccine3);
+                    monthlyData.vaccine4.push(vaccine4);
+                    monthlyData.ipti1.push(ipti1);
+                    monthlyData.ipti2.push(ipti2);
+                    monthlyData.ipti3.push(ipti3);
+                    monthlyData.anc1.push(anc1);
+                    monthlyData.anc4.push(anc4);
+                    monthlyData.anc8.push(anc8);
+                    monthlyData.iptp1.push(iptp1);
+                    monthlyData.iptp2.push(iptp2);
+                    monthlyData.iptp3.push(iptp3);
+                    monthlyData.llinAnc.push(llinAnc);
+                    monthlyData.vitA6.push(vitA6);
+                    monthlyData.vitA12.push(vitA12);
+                    
+                    // Push stockout metrics (averaged percentages)
+                    monthlyData.artemether20.push(monthData.length > 0 ? parseFloat((artemether20Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.artesunate50.push(monthData.length > 0 ? parseFloat((artesunate50Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.artesunate60.push(monthData.length > 0 ? parseFloat((artesunate60Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.artesunate20.push(monthData.length > 0 ? parseFloat((artesunate20Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.rdtKit.push(monthData.length > 0 ? parseFloat((rdtKitSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.sp.push(monthData.length > 0 ? parseFloat((spSum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act6.push(monthData.length > 0 ? parseFloat((act6Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act12.push(monthData.length > 0 ? parseFloat((act12Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act18.push(monthData.length > 0 ? parseFloat((act18Sum / monthData.length).toFixed(1)) : 0);
+                    monthlyData.act24.push(monthData.length > 0 ? parseFloat((act24Sum / monthData.length).toFixed(1)) : 0);
+                } else {
+                    // Push zeros for all metrics
+                    monthlyData.suspected.push(0);
+                    monthlyData.tests.push(0);
+                    monthlyData.confirmed.push(0);
+                    monthlyData.treated.push(0);
+                    monthlyData.presumed.push(0);
+                    monthlyData.deaths.push(0);
+                    monthlyData.positivity.push(0);
+                    monthlyData.testing.push(0);
+                    monthlyData.treatment.push(0);
+                    monthlyData.reporting.push(0);
+                    
+                    // Intervention zeros
+                    monthlyData.penta1.push(0);
+                    monthlyData.penta3.push(0);
+                    monthlyData.llinPenta3.push(0);
+                    monthlyData.vaccine1.push(0);
+                    monthlyData.vaccine2.push(0);
+                    monthlyData.vaccine3.push(0);
+                    monthlyData.vaccine4.push(0);
+                    monthlyData.ipti1.push(0);
+                    monthlyData.ipti2.push(0);
+                    monthlyData.ipti3.push(0);
+                    monthlyData.anc1.push(0);
+                    monthlyData.anc4.push(0);
+                    monthlyData.anc8.push(0);
+                    monthlyData.iptp1.push(0);
+                    monthlyData.iptp2.push(0);
+                    monthlyData.iptp3.push(0);
+                    monthlyData.llinAnc.push(0);
+                    monthlyData.vitA6.push(0);
+                    monthlyData.vitA12.push(0);
+                    
+                    // Stockout zeros
+                    monthlyData.artemether20.push(0);
+                    monthlyData.artesunate50.push(0);
+                    monthlyData.artesunate60.push(0);
+                    monthlyData.artesunate20.push(0);
+                    monthlyData.rdtKit.push(0);
+                    monthlyData.sp.push(0);
+                    monthlyData.act6.push(0);
+                    monthlyData.act12.push(0);
+                    monthlyData.act18.push(0);
+                    monthlyData.act24.push(0);
+                }
+            });
+            
+            return monthlyData;
+        }
+
+        function initDashboard() {
+            renderCards();
+            updateIndicators('national');
+            renderAllCharts();
+            renderMonthlyIncidence();
+            
+        }
+
+        function renderCards() {
+            const grid = document.getElementById('sidebarCardsGrid');
+            const cards = cardConfigs[currentDataType];
+            
+            grid.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'sidebar-card';
+                cardEl.setAttribute('data-metric', card.metric);
+                cardEl.onclick = () => filterByCard(card.metric);
+                
+                const colorStyle = card.color ? `style="color: ${card.color};"` : '';
+                const fontSize = card.isPercent ? 'style="font-size: 18px;"' : '';
+                
+                cardEl.innerHTML = `
+                    <div class="sidebar-label">${card.label}</div>
+                    <div class="sidebar-value" id="${card.id}" ${colorStyle} ${fontSize}>0</div>
+                    <div class="sidebar-subtitle">${card.subtitle}</div>
+                `;
+                
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function filterByCard(cardType) {
+            // Toggle card selection
+            const cards = document.querySelectorAll('.sidebar-card');
+            cards.forEach(card => {
+                if (card.dataset.metric === cardType) {
+                    if (card.classList.contains('active')) {
+                        card.classList.remove('active');
+                        activeCardFilter = null;
+                        document.getElementById('filterIndicator').classList.remove('active');
+                    } else {
+                        cards.forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        activeCardFilter = cardType;
+                        document.getElementById('filterIndicator').classList.add('active');
+                    }
+                }
+            });
+            
+            renderAllCharts();
+        }
+
+        function selectNational() {
+            currentSelection = 'national';
+            activeCardFilter = null;
+            
+            document.getElementById('headerDistrictSelect').value = '';
+            document.getElementById('headerChiefdomSelect').value = '';
+            document.getElementById('headerChiefdomSelect').disabled = true;
+            document.getElementById('headerChiefdomSelect').innerHTML = '<option value="">Select District First</option>';
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('filterIndicator').classList.remove('active');
+            
+            updateIndicators('national');
+            renderAllCharts();
+        }
+
+        function handleTimePeriodChange() {
+            currentTimePeriod = document.getElementById('timePeriodSelect').value;
+            updateIndicators(currentSelection);
+            renderAllCharts();
+            renderMonthlyIncidence();
+        }
+
+        function handleDataTypeChange() {
+            currentDataType = document.getElementById('dataTypeSelect').value;
+            activeCardFilter = null; // Reset card filter when changing data type
+            renderCards(); // Re-render cards for new data type
+            updateIndicators(currentSelection);
+            renderAllCharts();
+            renderMonthlyIncidence();
+        }
+
+        function handleHeaderDistrictChange() {
+            const district = document.getElementById('headerDistrictSelect').value;
+            
+            if (!district) {
+                selectNational();
+                return;
+            }
+            selectDistrict(district);
+        }
+
+        function selectDistrict(district) {
+            currentSelection = district;
+            activeCardFilter = null;
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            
+            const headerChiefdomSelect = document.getElementById('headerChiefdomSelect');
+            headerChiefdomSelect.disabled = false;
+            headerChiefdomSelect.value = '';
+            headerChiefdomSelect.innerHTML = '<option value="">All Chiefdoms</option>' + 
+                chiefdomsData[district].map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            updateIndicators(district);
+            renderAllCharts();
+        }
+
+        function handleHeaderChiefdomChange() {
+            const chiefdom = document.getElementById('headerChiefdomSelect').value;
+            
+            if (!chiefdom) {
+                const district = document.getElementById('headerDistrictSelect').value;
+                if (district) {
+                    selectDistrict(district);
+                }
+                return;
+            }
+            selectChiefdom(chiefdom);
+        }
+
+        function selectChiefdom(chiefdom) {
+            currentSelection = chiefdom;
+            activeCardFilter = null;
+            document.querySelectorAll('.sidebar-card').forEach(c => c.classList.remove('active'));
+            updateIndicators(chiefdom);
+            renderAllCharts();
+        }
+
+        function resetSelection() {
+            selectNational();
+        }
+
+        function renderMonthlyIncidence() {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthsGrid = document.getElementById('monthsGrid');
+            const titleElement = document.getElementById('monthlyIncidenceTitle');
+            monthsGrid.innerHTML = '';
+
+            if (!rawCSVData || rawCSVData.length === 0) {
+                console.warn('No CSV data for monthly incidence');
+                return;
+            }
+            
+            // Set title and metric based on data type
+            let title, metricColumn, isPercentage;
+            if (currentDataType === 'surveillance') {
+                title = 'Monthly Incidence Rate';
+                metricColumn = 'Incidence_Per_1000';
+                isPercentage = false;
+            } else if (currentDataType === 'intervention') {
+                title = 'Coverage of Routine ITN (EPI and ANC)';
+                metricColumn = 'LLITN_given_at_Pentavalent_3rd_dose'; // Using LLITN at Penta3 as primary
+                isPercentage = false;
+            } else if (currentDataType === 'stockout') {
+                title = 'Average Days of Stockout (RDT & ACT)';
+                metricColumn = 'Malaria_Rapid_Diagnostic_Test_Kit_Stockout'; // Using RDT stockout as primary
+                isPercentage = true;
+            }
+            
+            titleElement.textContent = title;
+            
+            // Filter data by current selection and data type
+            let filteredData = rawCSVData.filter(row => 
+                row.DataType === currentDataType && row.Year == currentTimePeriod
+            );
+            
+            if (currentSelection !== 'national') {
+                if (currentSelection.includes(',')) {
+                    const [district, chiefdom] = currentSelection.split(',');
+                    filteredData = filteredData.filter(row => 
+                        row.District === district.trim() && row.Chiefdom === chiefdom.trim()
+                    );
+                } else {
+                    filteredData = filteredData.filter(row => row.District === currentSelection);
+                }
+            }
+            
+            monthOrder.forEach((fullMonth, index) => {
+                const monthData = filteredData.filter(row => row.Month === fullMonth);
+                
+                // Calculate value based on data type
+                let value = 0;
+                if (monthData.length > 0) {
+                    if (currentDataType === 'intervention') {
+                        // For intervention: sum LLITN at Penta3 and LLITN at ANC
+                        const llinPenta3 = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.LLITN_given_at_Pentavalent_3rd_dose) || 0), 0
+                        );
+                        const llinAnc = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Antenatal_client_given_LLITN) || 0), 0
+                        );
+                        value = Math.round(llinPenta3 + llinAnc);
+                    } else if (currentDataType === 'stockout') {
+                        // For stockout: average of RDT and ACT stockout percentages
+                        const rdtSum = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Malaria_Rapid_Diagnostic_Test_Kit_Stockout) || 0), 0
+                        );
+                        const actSum = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Artemether_Lumefantrine_ACT_20mg_120mg_6_Tabs_Stockout) || 0), 0
+                        );
+                        const avgStockout = (rdtSum + actSum) / (monthData.length * 2);
+                        // Convert percentage to approximate days (assuming 30 days per month)
+                        value = Math.round((avgStockout / 100) * 30);
+                    } else {
+                        // For surveillance: incidence per 1000
+                        const valueSum = monthData.reduce((sum, row) => 
+                            sum + (parseFloat(row.Incidence_Per_1000) || 0), 0
+                        );
+                        value = Math.round(valueSum / monthData.length);
+                    }
+                }
+                
+                // Set color class based on data type and value
+                let colorClass = '';
+                if (currentDataType === 'surveillance') {
+                    if (value < 250) colorClass = 'incidence-low';
+                    else if (value <= 450) colorClass = 'incidence-moderate';
+                    else if (value <= 650) colorClass = 'incidence-high';
+                    else colorClass = 'incidence-very-high';
+                } else if (currentDataType === 'intervention') {
+                    if (value >= 1000) colorClass = 'incidence-low';
+                    else if (value >= 500) colorClass = 'incidence-moderate';
+                    else if (value >= 250) colorClass = 'incidence-high';
+                    else colorClass = 'incidence-very-high';
+                } else if (currentDataType === 'stockout') {
+                    if (value <= 3) colorClass = 'incidence-low';
+                    else if (value <= 7) colorClass = 'incidence-moderate';
+                    else if (value <= 15) colorClass = 'incidence-high';
+                    else colorClass = 'incidence-very-high';
+                }
+
+                const monthBox = document.createElement('div');
+                monthBox.className = `month-box ${colorClass}`;
+                monthBox.innerHTML = `
+                    <div class="month-name">${monthNames[index]}</div>
+                    <div class="month-value">${value}</div>
+                `;
+                monthsGrid.appendChild(monthBox);
+            });
+        }
+
+        function updateIndicators(level) {
+            // Get data from CSV ONLY
+            const data = getCSVDataForLevel(level, currentDataType);
+            
+            if (!data) {
+                console.warn('No CSV data available for', level, currentDataType);
+                return;
+            }
+            
+            console.log('Using CSV data for', level, currentDataType);
+            
+            // Update all cards with the data
+            const cards = cardConfigs[currentDataType];
+            cards.forEach(card => {
+                const valueElement = document.getElementById(card.id);
+                if (valueElement) {
+                    const value = data[card.metric];
+                    if (value !== undefined && value !== null) {
+                        if (card.isPercent) {
+                            valueElement.textContent = value + '%';
+                        } else {
+                            valueElement.textContent = typeof value === 'number' ? Math.round(value).toLocaleString() : value;
+                        }
+                    } else {
+                        valueElement.textContent = '-';
+                    }
+                }
+            });
+        }
+
+        function renderAllCharts() {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            // Get configuration for current data type
+            const chartConfig = USER_CHART_CONFIG[currentDataType];
+            
+            // Update chart title using config
+            document.getElementById('chartTitle').textContent = 
+                `${chartConfig.rightChart.title} (January-December ${currentTimePeriod})`;
+            
+            // Get monthly data from CSV
+            const monthlyData = getMonthlyCSVData(currentSelection, currentDataType);
+            
+            if (!monthlyData) {
+                console.warn('No monthly data available for charts');
+                return;
+            }
+            
+            // ====================================================================
+            // LEFT CHART: Build datasets from current data type's leftChart config
+            // ====================================================================
+            const leftChartDatasets = chartConfig.leftChart.metrics.map(metric => ({
+                label: metric.label,
+                data: monthlyData[metric.dataKey],
+                color: metric.color
+            }));
+            
+            renderMultiLine('combinedRates', 
+                months,
+                leftChartDatasets,
+                chartConfig.leftChart.showAsPercentage,
+                'top'
+            );
+            
+            // ====================================================================
+            // RIGHT CHART: Build datasets from current data type's rightChart config
+            // ====================================================================
+            let rightChartDatasets = chartConfig.rightChart.metrics.map(metric => ({
+                label: metric.label,
+                data: monthlyData[metric.dataKey],
+                color: metric.color
+            }));
+            
+            // Filter datasets based on active card filter (if any)
+            if (activeCardFilter) {
+                // Build filter map dynamically from config
+                const filterMap = {};
+                chartConfig.rightChart.metrics.forEach(metric => {
+                    filterMap[metric.dataKey] = metric.label;
+                });
+                
+                const targetLabel = filterMap[activeCardFilter];
+                if (targetLabel) {
+                    rightChartDatasets = rightChartDatasets.filter(ds => ds.label === targetLabel);
+                }
+            }
+            
+            renderMultiLine('trendCombined',
+                months,
+                rightChartDatasets,
+                chartConfig.rightChart.showAsPercentage,
+                'top'
+            );
+        }
+
+        function renderMultiLine(id, labels, datasets, isPercentage = false, legendPosition = 'top') {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            const chartDatasets = datasets.map(ds => ({
+                label: ds.label,
+                data: ds.data,
+                borderColor: ds.color,
+                backgroundColor: ds.color + '20',
+                tension: 0.4,
+                fill: false,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: chartDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            position: legendPosition,
+                            align: 'center',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 12,
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                },
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    return datasets.map((dataset, i) => ({
+                                        text: dataset.label,
+                                        fillStyle: dataset.borderColor,
+                                        strokeStyle: dataset.borderColor,
+                                        lineWidth: 2,
+                                        hidden: !chart.isDatasetVisible(i),
+                                        index: i,
+                                        pointStyle: 'circle'
+                                    }));
+                                }
+                            },
+                            onClick: function(e, legendItem, legend) {
+                                const index = legendItem.index;
+                                const chart = legend.chart;
+                                const clickedLabel = chart.data.datasets[index].label;
+                                
+                                // Toggle filter: if same label clicked, clear filter; otherwise set new filter
+                                if (legendFilter === clickedLabel) {
+                                    legendFilter = null;
+                                } else {
+                                    legendFilter = clickedLabel;
+                                }
+                                
+                                // Update all datasets visibility based on filter
+                                chart.data.datasets.forEach((dataset, i) => {
+                                    if (legendFilter === null) {
+                                        // No filter: show all
+                                        chart.setDatasetVisibility(i, true);
+                                    } else {
+                                        // Filter active: show only matching dataset
+                                        chart.setDatasetVisibility(i, dataset.label === legendFilter);
+                                    }
+                                });
+                                
+                                chart.update();
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: function(context) {
+                                    const suffix = isPercentage ? '%' : '';
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: isPercentage ? 100 : undefined,
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 8,
+                                callback: function(value) {
+                                    return isPercentage ? value + '%' : value.toLocaleString();
+                                }
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 5,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLine(id, label, labels, data, color) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            
+            if (charts[id]) charts[id].destroy();
+            
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 15,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 8
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 11 },
+                                padding: 5,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initDashboard);
+        
+        // ============================================================================
+        // CSV COLUMN REFERENCE GUIDE
+        // ============================================================================
+        // This dashboard expects the following columns in your CSV file:
+        //
+        // REQUIRED COLUMNS FOR ALL DATA TYPES:
+        // - DataType: 'surveillance', 'intervention', or 'stockout'
+        // - Year: e.g., 2024
+        // - Month: e.g., 'January', 'February', etc.
+        // - District: District name
+        // - Chiefdom: Chiefdom name
+        //
+        // CASE COUNTS (used by all data types):
+        // - OPD_Visits
+        // - Suspected_Cases
+        // - Tests_Performed
+        // - Confirmed_Cases
+        // - Treated_Cases
+        // - Admissions
+        // - Deaths
+        // - Presumed_Cases
+        // - Population
+        //
+        // PRE-CALCULATED METRICS (must be calculated in CSV):
+        // - Test_Positivity_Rate (%)
+        // - Testing_Rate (%)
+        // - Treatment_Rate (%)
+        // - Case_Fatality_Rate (%)
+        // - Incidence_Per_1000 (or Stockout Rate %, or % Routine LLINs)
+        // - Reporting_Rate (%)
+        //
+        // INTERVENTION COLUMNS (for DataType = 'intervention'):
+        // - IPTp_Coverage (%)
+        // - IPTi_Coverage (%)
+        // - ANC_1st_Visit (%)
+        // - ANC_4plus_Visits (%)
+        // - Penta3_Coverage (%)
+        // - Malaria_Vaccine (%)
+        // - LLIN_Distribution (%)
+        // - LLIN_Usage (%)
+        // - IRS_Coverage (%)
+        // - SMC_Coverage (%)
+        // - Cases_Averted (count)
+        //
+        // STOCKOUT COLUMNS (for DataType = 'stockout'):
+        // - RDT_Stock_Days (days)
+        // - ACT_Stock_Days (days)
+        // - RDT_Stockout_Percent (%)
+        // - ACT_Stockout_Percent (%)
+        // - Untreated_Cases (count)
+        //
+        // REMEMBER: All percentages and rates must be PRE-CALCULATED in your CSV!
+        // This dashboard does NOT perform any calculations - it only reads and
+        // displays the values you provide.
+        // ============================================================================
+    </script>
+</body>
+</html>

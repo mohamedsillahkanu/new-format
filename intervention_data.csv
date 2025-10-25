@@ -1,0 +1,25 @@
+DataType,Year,Month,District,Chiefdom,Facility,Population,Reporting_Rate,Pentavalent_1st_dose,Pentavalent_3rd_dose,LLITN_given_at_Pentavalent_3rd_dose,Malaria_Vaccine_1st_dose,Malaria_Vaccine_2nd_dose,Malaria_Vaccine_3rd_dose,Malaria_Vaccine_4th_dose,IPTi_1st_dose_given,IPTi_2nd_dose_given,IPTi_3rd_dose_given,Antenatal_client_1st_visit,Antenatal_client_4th_visit,Antenatal_client_8th_visit,Antenatal_client_IPT_1st_dose,Antenatal_client_IPT_2nd_dose,Antenatal_client_IPT_3rd_dose,Antenatal_client_given_LLITN,Vitamin_A_supplement_6_11_months,Vitamin_A_supplement_12_59_months
+intervention,2024,January,Bo,Kakua,Kakua CHC,45000,95,145,128,115,140,125,110,95,138,122,108,180,165,85,175,160,145,120,220,850
+intervention,2024,February,Bo,Kakua,Kakua CHC,45000,96,142,125,112,138,123,108,93,135,120,105,178,163,83,173,158,143,118,215,840
+intervention,2024,March,Bo,Kakua,Kakua CHC,45000,94,148,131,118,143,128,113,98,141,125,111,183,168,88,178,163,148,123,225,865
+intervention,2024,April,Bo,Kakua,Kakua CHC,45000,95,150,133,120,145,130,115,100,143,127,113,185,170,90,180,165,150,125,230,875
+intervention,2024,May,Bo,Kakua,Kakua CHC,45000,96,152,135,122,147,132,117,102,145,129,115,188,173,92,183,168,153,128,235,885
+intervention,2024,June,Bo,Kakua,Kakua CHC,45000,95,155,138,125,150,135,120,105,148,132,118,190,175,95,185,170,155,130,240,895
+intervention,2024,July,Bo,Kakua,Kakua CHC,45000,97,158,141,128,153,138,123,108,151,135,121,193,178,98,188,173,158,133,245,905
+intervention,2024,August,Bo,Kakua,Kakua CHC,45000,96,160,143,130,155,140,125,110,153,137,123,195,180,100,190,175,160,135,250,915
+intervention,2024,September,Bo,Kakua,Kakua CHC,45000,95,157,140,127,152,137,122,107,150,134,120,192,177,97,187,172,157,132,247,910
+intervention,2024,October,Bo,Kakua,Kakua CHC,45000,96,154,137,124,149,134,119,104,147,131,117,189,174,94,184,169,154,129,242,900
+intervention,2024,November,Bo,Kakua,Kakua CHC,45000,95,151,134,121,146,131,116,101,144,128,114,186,171,91,181,166,151,126,237,890
+intervention,2024,December,Bo,Kakua,Kakua CHC,45000,96,149,132,119,144,129,114,99,142,126,112,184,169,89,179,164,149,124,233,880
+intervention,2024,January,Kenema,Nongowa,Nongowa CHC,38000,94,122,108,97,118,105,93,80,116,103,91,152,139,72,148,135,122,101,186,720
+intervention,2024,February,Kenema,Nongowa,Nongowa CHC,38000,95,120,106,95,116,103,91,78,114,101,89,150,137,70,146,133,120,99,183,710
+intervention,2024,March,Kenema,Nongowa,Nongowa CHC,38000,93,125,111,100,121,108,96,83,119,106,94,155,142,75,151,138,125,104,191,735
+intervention,2024,April,Kenema,Nongowa,Nongowa CHC,38000,94,127,113,102,123,110,98,85,121,108,96,157,144,77,153,140,127,106,195,745
+intervention,2024,May,Kenema,Nongowa,Nongowa CHC,38000,95,129,115,104,125,112,100,87,123,110,98,160,147,79,156,143,130,109,199,755
+intervention,2024,June,Kenema,Nongowa,Nongowa CHC,38000,94,131,117,106,127,114,102,89,125,112,100,162,149,81,158,145,132,111,203,765
+intervention,2024,July,Kenema,Nongowa,Nongowa CHC,38000,96,134,120,109,130,117,105,92,128,115,103,165,152,84,161,148,135,114,207,775
+intervention,2024,August,Kenema,Nongowa,Nongowa CHC,38000,95,136,122,111,132,119,107,94,130,117,105,167,154,86,163,150,137,116,211,785
+intervention,2024,September,Kenema,Nongowa,Nongowa CHC,38000,94,133,119,108,129,116,104,91,127,114,102,164,151,83,160,147,134,113,208,780
+intervention,2024,October,Kenema,Nongowa,Nongowa CHC,38000,95,130,116,105,126,113,101,88,124,111,99,161,148,80,157,144,131,110,204,770
+intervention,2024,November,Kenema,Nongowa,Nongowa CHC,38000,94,128,114,103,124,111,99,86,122,109,97,159,146,78,155,142,129,108,200,760
+intervention,2024,December,Kenema,Nongowa,Nongowa CHC,38000,95,126,112,101,122,109,97,84,120,107,95,157,144,76,153,140,127,106,197,750
